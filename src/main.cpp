@@ -25,6 +25,10 @@ present p_present_target;
 void* pVec3 = nullptr;
 
 
+struct Vec2
+{
+	float x, y;
+};
 struct Vec3 
 {
 	float x, y, z;
@@ -42,30 +46,38 @@ typedef float* (__cdecl* CopyVec3)(float*, float*);
 
 float cameraMoveSpeed = 5.0f;
 float* pCameraMoveSpeed = &cameraMoveSpeed;
+Vec2* pitchAndYaw = nullptr;
+float* fov = nullptr;
 
 Vec3* detourCopyVec3(Vec3* vector1, Vec3* vector2)
 {
 	uintptr_t mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
-	float* pitch = (float*)(mainModuleBase + 0xB66390);
-	float* yaw = (float*)(mainModuleBase + 0xB66394);
-	float* fov = (float*)(mainModuleBase + 0xB663B0);
+	pitchAndYaw = (Vec2*)(mainModuleBase + 0xB66390);
+	fov = (float*)(mainModuleBase + 0xB663B0);
 	if ((vector1 != vector2) && ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66370) || (uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66380)))
 	{
-		if (GetAsyncKeyState(VK_NUMPAD1))
-			vector1->y += *pCameraMoveSpeed;
-		if (GetAsyncKeyState(VK_NUMPAD0))
-			vector1->y -= *pCameraMoveSpeed;
+		if ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66370))
+		{
+			//todo, map camera focus to mouse
+		}
+		if ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66380))
+		{
+			//todo, make movements relative instead of absolute
+			if (GetAsyncKeyState(VK_NUMPAD1))
+				vector1->y += *pCameraMoveSpeed;
+			if (GetAsyncKeyState(VK_NUMPAD0))
+				vector1->y -= *pCameraMoveSpeed;
 
-		if (GetAsyncKeyState(VK_LEFT))
-			vector1->x -= *pCameraMoveSpeed;
-		if (GetAsyncKeyState(VK_RIGHT))
-			vector1->x += *pCameraMoveSpeed;
+			if (GetAsyncKeyState(VK_LEFT))
+				vector1->x -= *pCameraMoveSpeed;
+			if (GetAsyncKeyState(VK_RIGHT))
+				vector1->x += *pCameraMoveSpeed;
 
-		if (GetAsyncKeyState(VK_UP))
-			vector1->z += *pCameraMoveSpeed;
-		if (GetAsyncKeyState(VK_DOWN))
-			vector1->z -= *pCameraMoveSpeed;
-
+			if (GetAsyncKeyState(VK_UP))
+				vector1->z += *pCameraMoveSpeed;
+			if (GetAsyncKeyState(VK_DOWN))
+				vector1->z -= *pCameraMoveSpeed;
+		}
 		return vector1;
 	}
 		
@@ -163,7 +175,7 @@ static long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_int
 			return p_present(p_swap_chain, sync_interval, flags);
 	}
 
-	Overlay(&cameraMoveSpeed);
+	Overlay();
 
 	p_context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());

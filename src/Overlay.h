@@ -1,3 +1,3 @@
 #pragma once
 
-void Overlay(float*);
+void Overlay();

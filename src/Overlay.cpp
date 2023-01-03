@@ -8,6 +8,17 @@
 
 #include "MinHook.h"
 
+#include "main.h"
+
+
+
+extern struct Vec2;
+
+extern float* pCameraMoveSpeed;
+
+extern Vec2* pitchAndYaw;
+extern float* fov;
+
 bool open = true;
 
 bool bHealth = false, bInk = false, bmovementCheat = false;
@@ -24,7 +35,7 @@ uintptr_t addressOfFunction = ((uintptr_t)(GetModuleHandle(L"flower_kernel.dll")
 
 bool cameraUpdates = false;
 
-void Overlay(float* cameraMoveSpeed)
+void Overlay()
 {
     //get main.dll module base
     uintptr_t mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
@@ -60,8 +71,12 @@ void Overlay(float* cameraMoveSpeed)
         ImGui::Begin("Camera", &show_camera_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
         ImGui::InputFloat3("Camera Focus", ((float*)(mainModuleBase + 0xB66370)), "%.3f", 0);
         ImGui::InputFloat3("Camera Position", ((float*)(mainModuleBase + 0xB66380)), "%.3f", 0);
-
-        ImGui::InputFloat("Camera Move Speed", cameraMoveSpeed, 0.0f, 0.0f, "%.3f", 0);
+        if (cameraUpdates)
+        {
+            ImGui::InputFloat2("Camera Pitch and Yaw", (float*)pitchAndYaw, "%.3f", 0);
+            ImGui::InputFloat("Camera FOV", fov, 0.0f, 0.0f, "%.3f", 0);
+        }
+        ImGui::InputFloat("Camera Move Speed", pCameraMoveSpeed, 0.0f, 0.0f, "%.3f", 0);
         if (ImGui::Button("Toggle Camera Updates"))
         {
             cameraUpdates = !cameraUpdates;
