@@ -22,6 +22,62 @@ present p_present;
 present p_present_target;
 
 
+void* pVec3 = nullptr;
+
+
+struct Vec3 
+{
+	float x, y, z;
+};
+
+//float* CopyVec3(float* vector1, float* vector2)
+//{
+//	vector1[0] = vector2[0];
+//	vector1[1] = vector2[1];
+//	vector1[2] = vector2[2];
+//	return vector1;
+//}
+
+typedef float* (__cdecl* CopyVec3)(float*, float*);
+
+float cameraMoveSpeed = 5.0f;
+float* pCameraMoveSpeed = &cameraMoveSpeed;
+
+Vec3* detourCopyVec3(Vec3* vector1, Vec3* vector2)
+{
+	uintptr_t mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
+	float* pitch = (float*)(mainModuleBase + 0xB66390);
+	float* yaw = (float*)(mainModuleBase + 0xB66394);
+	float* fov = (float*)(mainModuleBase + 0xB663B0);
+	if ((vector1 != vector2) && ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66370) || (uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66380)))
+	{
+		if (GetAsyncKeyState(VK_NUMPAD1))
+			vector1->y += *pCameraMoveSpeed;
+		if (GetAsyncKeyState(VK_NUMPAD0))
+			vector1->y -= *pCameraMoveSpeed;
+
+		if (GetAsyncKeyState(VK_LEFT))
+			vector1->x -= *pCameraMoveSpeed;
+		if (GetAsyncKeyState(VK_RIGHT))
+			vector1->x += *pCameraMoveSpeed;
+
+		if (GetAsyncKeyState(VK_UP))
+			vector1->z += *pCameraMoveSpeed;
+		if (GetAsyncKeyState(VK_DOWN))
+			vector1->z -= *pCameraMoveSpeed;
+
+		return vector1;
+	}
+		
+	if (vector1 != vector2)
+	{
+		vector1->x = vector2->x;
+		vector1->y = vector2->y;
+		vector1->z = vector2->z;
+	}
+	return vector1;
+}
+
 bool get_present_pointer()
 {
 	DXGI_SWAP_CHAIN_DESC sd;
@@ -65,7 +121,7 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		ShowCursor(TRUE);
 		return true;
 	}
-	else if (GetAsyncKeyState(VK_END) & 1)
+	if (GetAsyncKeyState(VK_END))
 	{
 		//EnableMouseInPointer(TRUE);
 		ClipCursor(NULL);
@@ -107,7 +163,7 @@ static long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_int
 			return p_present(p_swap_chain, sync_interval, flags);
 	}
 
-	Overlay();
+	Overlay(&cameraMoveSpeed);
 
 	p_context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -147,6 +203,20 @@ int WINAPI main(HINSTANCE hinstDLL)
 		return 1;
 	}
 
+	while (!GetModuleHandle(L"flower_kernel.dll"))
+	{
+		Sleep(50);
+	}
+
+	uintptr_t addressOfFunction = ((uintptr_t)(GetModuleHandle(L"flower_kernel.dll")) + 0x1A9D0);
+
+	CopyVec3 pVec3target = reinterpret_cast<CopyVec3>(addressOfFunction);
+	
+	if (MH_CreateHook(reinterpret_cast<void**>(addressOfFunction), &detourCopyVec3, reinterpret_cast<void**>(&pVec3)) != MH_OK) {
+		return 1;
+	}
+		
+
 	if (MH_EnableHook(p_present_target) != MH_OK) {
 		return 1;
 	}
@@ -154,13 +224,6 @@ int WINAPI main(HINSTANCE hinstDLL)
 	while (true) {
 		Sleep(50);
 
-		if (GetAsyncKeyState(VK_NUMPAD0) & 1) {
-
-		}
-
-		if (GetAsyncKeyState(VK_NUMPAD1)) {
-			break;
-		}
 	}
 
 	//Cleanup

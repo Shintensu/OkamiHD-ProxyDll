@@ -6,6 +6,10 @@
 #include "proc.h"
 #include "detourHook.h"
 
+#include "MinHook.h"
+
+bool open = true;
+
 bool bHealth = false, bInk = false, bmovementCheat = false;
 
 bool show_demo_window = true;
@@ -14,7 +18,13 @@ bool show_hack_window = true;
 ImVec4 clear_color = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 float teleport[3];
 
-void Overlay()
+
+
+uintptr_t addressOfFunction = ((uintptr_t)(GetModuleHandle(L"flower_kernel.dll")) + 0x1A9D0);
+
+bool cameraUpdates = false;
+
+void Overlay(float* cameraMoveSpeed)
 {
     //get main.dll module base
     uintptr_t mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
@@ -47,9 +57,26 @@ void Overlay()
     // Camera Window
     if (show_camera_window)
     {
-        ImGui::Begin("Camera Position", &show_camera_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        ImGui::Begin("Camera", &show_camera_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
         ImGui::InputFloat3("Camera Focus", ((float*)(mainModuleBase + 0xB66370)), "%.3f", 0);
         ImGui::InputFloat3("Camera Position", ((float*)(mainModuleBase + 0xB66380)), "%.3f", 0);
+
+        ImGui::InputFloat("Camera Move Speed", cameraMoveSpeed, 0.0f, 0.0f, "%.3f", 0);
+        if (ImGui::Button("Toggle Camera Updates"))
+        {
+            cameraUpdates = !cameraUpdates;
+            if (cameraUpdates)
+            {
+                if (MH_EnableHook(reinterpret_cast<void**>(addressOfFunction)) != MH_OK)
+                    return;
+            }
+            if (!cameraUpdates)
+            {
+                if (MH_DisableHook(reinterpret_cast<void**>(addressOfFunction)) != MH_OK)
+                    return;
+            }
+        }
+            
         if (ImGui::Button("Close Me"))
             show_camera_window = false;
         ImGui::End();
