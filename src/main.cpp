@@ -44,16 +44,21 @@ struct Vec3
 
 typedef float* (__cdecl* CopyVec3)(float*, float*);
 
+uintptr_t mainModuleBase = 0;
+uintptr_t* pMainModuleBase = &mainModuleBase;
+uintptr_t flowerKernelModuleBase = 0;
+uintptr_t* pFlowerKernelModuleBase = &flowerKernelModuleBase;
+
+
 float cameraMoveSpeed = 5.0f;
 float* pCameraMoveSpeed = &cameraMoveSpeed;
+Vec2* pitchAndYawDistant = nullptr;
 Vec2* pitchAndYaw = nullptr;
+
 float* fov = nullptr;
 
 Vec3* detourCopyVec3(Vec3* vector1, Vec3* vector2)
 {
-	uintptr_t mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
-	pitchAndYaw = (Vec2*)(mainModuleBase + 0xB66390);
-	fov = (float*)(mainModuleBase + 0xB663B0);
 	if ((vector1 != vector2) && ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66370) || (uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66380)))
 	{
 		if ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66370))
@@ -220,7 +225,13 @@ int WINAPI main(HINSTANCE hinstDLL)
 		Sleep(50);
 	}
 
-	uintptr_t addressOfFunction = ((uintptr_t)(GetModuleHandle(L"flower_kernel.dll")) + 0x1A9D0);
+	mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
+	flowerKernelModuleBase = (uintptr_t)GetModuleHandle(L"flower_kernel.dll");
+	pitchAndYawDistant = (Vec2*)(mainModuleBase + 0xB66390);
+	pitchAndYaw = (Vec2*)(mainModuleBase + 0xB6659C);
+	fov = (float*)(mainModuleBase + 0xB663B0);
+
+	uintptr_t addressOfFunction = (flowerKernelModuleBase + 0x1A9D0);
 
 	CopyVec3 pVec3target = reinterpret_cast<CopyVec3>(addressOfFunction);
 	
