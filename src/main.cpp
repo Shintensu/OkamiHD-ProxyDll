@@ -65,6 +65,7 @@ Vec2* pitchAndYawDistant = nullptr;
 Vec2* pitchAndYaw = nullptr;
 
 Vec3* cameraPostion;
+Vec3* cameraFocus;
 
 float* fov = nullptr;
 
@@ -88,19 +89,7 @@ Vec3* detourCopyVec3(Vec3* vector1, Vec3* vector2)
 			if ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66370))
 			{
 				//todo, map camera focus to mouse
-				cameraPostion = (Vec3*)(mainModuleBase + 0xB66380);
 
-				if (*(uintptr_t*)(*pMainModuleBase + 0xB6B2D0))
-				{
-
-					pCoordinateDelta->x = cosf(pitchAndYawDistant->y * -1) * cameraDistanceFromFocus;
-					pCoordinateDelta->y = sinf(pitchAndYawDistant->x * -1) * cameraDistanceFromFocus;
-					pCoordinateDelta->z = sinf(pitchAndYawDistant->y * -1) * cameraDistanceFromFocus;
-
-					vector1->x = cameraPostion->x + pCoordinateDelta->x;
-					vector1->y = cameraPostion->y + pCoordinateDelta->y;
-					vector1->z = cameraPostion->z + pCoordinateDelta->z;
-				}
 				return vector1;
 			}
 
@@ -120,9 +109,9 @@ Vec3* detourCopyVec3(Vec3* vector1, Vec3* vector2)
 					pCoordinateDelta->y = sinf(pitchAndYawDistant->x * -1) * tempSpeed;
 					pCoordinateDelta->z = sinf(pitchAndYawDistant->y * -1) * tempSpeed;
 
-					pCoordinateDeltaHalf->x = cosf(pitchAndYawDistant->y * -0.5f * PI) * tempSpeed;
-					pCoordinateDeltaHalf->y = sinf(pitchAndYawDistant->x * -0.5f * PI) * tempSpeed;
-					pCoordinateDeltaHalf->z = sinf(pitchAndYawDistant->y * -0.5f * PI) * tempSpeed;
+					pCoordinateDeltaHalf->x = sinf(pitchAndYawDistant->y * 1) * tempSpeed;
+					pCoordinateDeltaHalf->y = sinf(pitchAndYawDistant->x * 1) * tempSpeed;
+					pCoordinateDeltaHalf->z = cosf(pitchAndYawDistant->y * 1) * tempSpeed;
 
 					if (GetAsyncKeyState(0x57))
 					{
@@ -138,14 +127,26 @@ Vec3* detourCopyVec3(Vec3* vector1, Vec3* vector2)
 					}
 					if (GetAsyncKeyState(0x41))
 					{
-						vector1->x += pCoordinateDeltaHalf->x;
-						vector1->z += pCoordinateDeltaHalf->z;
-					}
-					if (GetAsyncKeyState(0x44))
-					{
 						vector1->x -= pCoordinateDeltaHalf->x;
 						vector1->z -= pCoordinateDeltaHalf->z;
 					}
+					if (GetAsyncKeyState(0x44))
+					{
+						vector1->x += pCoordinateDeltaHalf->x;
+						vector1->z += pCoordinateDeltaHalf->z;
+					}
+
+					cameraPostion = (Vec3*)(mainModuleBase + 0xB66380);
+					cameraFocus = (Vec3*)(mainModuleBase + 0xB66370);
+
+					pCoordinateDelta->x = cosf(pitchAndYawDistant->y * -1) * cameraDistanceFromFocus;
+					pCoordinateDelta->y = sinf(pitchAndYawDistant->x * -1) * cameraDistanceFromFocus;
+					pCoordinateDelta->z = sinf(pitchAndYawDistant->y * -1) * cameraDistanceFromFocus;
+
+					cameraFocus->x = cameraPostion->x + pCoordinateDelta->x;
+					cameraFocus->y = cameraPostion->y + pCoordinateDelta->y;
+					cameraFocus->z = cameraPostion->z + pCoordinateDelta->z;
+
 					return vector1;
 				}
 			}
@@ -360,10 +361,10 @@ int WINAPI main(HINSTANCE hinstDLL)
 	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00010104;
 	//Sleep(sleepTime+300);
 
-	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000004;
-	////Sleep(sleepTime);
-	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000104;
-	////Sleep(sleepTime);
+	*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000004;
+	Sleep(sleepTime);
+	*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000104;
+	Sleep(sleepTime);
 	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000204;
 	////Sleep(sleepTime);
 	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000304;
