@@ -14,8 +14,17 @@
 extern uintptr_t* pMainModuleBase;
 extern uintptr_t* pFlowerKernelModuleBase;
 
-extern struct Vec2;
-extern struct Vec3;
+extern struct Vec2
+{
+    float x, y;
+};
+extern struct Vec3
+{
+    float x, y, z;
+};
+
+
+extern int cursorPos[2];
 
 
 extern float* pCameraMoveSpeed;
@@ -24,6 +33,10 @@ extern Vec2* pitchAndYawDistant;
 extern Vec2* pitchAndYaw;
 extern float* fov;
 
+extern Vec3* ammyCoordinates;
+extern Vec3* pCoordinateDelta;
+
+extern int* cameraType;
 
 
 bool open = true;
@@ -37,6 +50,7 @@ ImVec4 clear_color = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 float teleport[3];
 
 bool cameraUpdates = false;
+bool freeCam;
 
 void Overlay()
 {
@@ -68,11 +82,11 @@ void Overlay()
         ImGui::Begin("Camera", &show_camera_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
         ImGui::InputFloat3("Camera Focus", ((float*)(*pMainModuleBase + 0xB66370)), "%.3f", 0);
         ImGui::InputFloat3("Camera Position", ((float*)(*pMainModuleBase + 0xB66380)), "%.3f", 0);
-        ImGui::InputFloat2("Camera Pitch and Yaw Distant", (float*)pitchAndYawDistant, "%.3f", 0);
-        ImGui::InputFloat2("Camera Pitch and Yaw", (float*)pitchAndYaw, "%.3f", 0);
+        ImGui::InputFloat2("Camera Pitch and Yaw", (float*)pitchAndYawDistant, "%.3f", 0);
+        ImGui::InputFloat2("Camera Pitch and Yaw Momentum", (float*)pitchAndYaw, "%.3f", 0);
         ImGui::InputFloat("Camera FOV", fov, 0.0f, 0.0f, "%.3f", 0);
         ImGui::InputFloat("Camera Move Speed", pCameraMoveSpeed, 0.0f, 0.0f, "%.3f", 0);
-        if (ImGui::Button("Toggle Camera Updates"))
+        if (ImGui::Button("Toggle Freecam"))
         {
             cameraUpdates = !cameraUpdates;
             if (cameraUpdates)
@@ -140,7 +154,7 @@ void Overlay()
                 *(BYTE*)(*pMainModuleBase + 0xB6B2BB) ^= 1 << 1;
             }
             if (ImGui::Button("No Clip"))
-                *(uintptr_t*)(*pMainModuleBase + 0xB74414) = 0x00010103;
+                *(uintptr_t*)(*pMainModuleBase + 0xB6B2BB) ^= 1 << 1;
 
             //continous writes
             if (bHealth)
@@ -170,11 +184,7 @@ void Overlay()
                 //Dash Meter
                 *(WORD*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0x1174 }) = 351;
             }
-
         }
-
-        if (ImGui::Button("Skip Company Logos"))
-            *(uintptr_t*)(*pMainModuleBase + 0xB74414) = 0x00010103;
 
         if (ImGui::Button("Close Me"))
             show_hack_window = false;

@@ -4,6 +4,8 @@
 #include <thread>
 #include <cstdint>
 
+#include <iostream>
+
 #include <d3d11.h>
 
 #include "imgui.h"
@@ -14,6 +16,8 @@
 
 #include "Overlay.h"
 
+#define PI 3.14159265359f
+
 // Globals
 HINSTANCE dll_handle;
 
@@ -21,9 +25,9 @@ typedef long(__stdcall* present)(IDXGISwapChain*, UINT, UINT);
 present p_present;
 present p_present_target;
 
+int cursorPos[2];
 
 void* pVec3 = nullptr;
-
 
 struct Vec2
 {
@@ -31,6 +35,11 @@ struct Vec2
 };
 struct Vec3 
 {
+	Vec3(float initX, float initY, float initZ)
+		: x(initX), y(initY), z(initZ)
+	{
+
+	}
 	float x, y, z;
 };
 
@@ -50,44 +59,98 @@ uintptr_t flowerKernelModuleBase = 0;
 uintptr_t* pFlowerKernelModuleBase = &flowerKernelModuleBase;
 
 
-float cameraMoveSpeed = 5.0f;
+float cameraMoveSpeed = 20.0f;
 float* pCameraMoveSpeed = &cameraMoveSpeed;
 Vec2* pitchAndYawDistant = nullptr;
 Vec2* pitchAndYaw = nullptr;
 
+Vec3* cameraPostion;
+
 float* fov = nullptr;
+
+Vec3* ammyCoordinates;
+Vec3 coordinateDelta(0.0f, 0.0f, 0.0f);
+Vec3* pCoordinateDelta = &coordinateDelta;
+
+Vec3 coordinateDeltaHalf(0.0f, 0.0f, 0.0f);
+Vec3* pCoordinateDeltaHalf = &coordinateDeltaHalf;
+
+const float cameraDistanceFromFocus = 100.0f;
+
+int* cameraType;
 
 Vec3* detourCopyVec3(Vec3* vector1, Vec3* vector2)
 {
-	if ((vector1 != vector2) && ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66370) || (uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66380)))
-	{
-		if ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66370))
-		{
-			//todo, map camera focus to mouse
-		}
-		if ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66380))
-		{
-			//todo, make movements relative instead of absolute
-			if (GetAsyncKeyState(VK_NUMPAD1))
-				vector1->y += *pCameraMoveSpeed;
-			if (GetAsyncKeyState(VK_NUMPAD0))
-				vector1->y -= *pCameraMoveSpeed;
-
-			if (GetAsyncKeyState(VK_LEFT))
-				vector1->x -= *pCameraMoveSpeed;
-			if (GetAsyncKeyState(VK_RIGHT))
-				vector1->x += *pCameraMoveSpeed;
-
-			if (GetAsyncKeyState(VK_UP))
-				vector1->z += *pCameraMoveSpeed;
-			if (GetAsyncKeyState(VK_DOWN))
-				vector1->z -= *pCameraMoveSpeed;
-		}
-		return vector1;
-	}
-		
 	if (vector1 != vector2)
 	{
+		if (GetAsyncKeyState(0x43))
+		{
+			if ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66370))
+			{
+				//todo, map camera focus to mouse
+				cameraPostion = (Vec3*)(mainModuleBase + 0xB66380);
+
+				if (*(uintptr_t*)(*pMainModuleBase + 0xB6B2D0))
+				{
+
+					pCoordinateDelta->x = cosf(pitchAndYawDistant->y * -1) * cameraDistanceFromFocus;
+					pCoordinateDelta->y = sinf(pitchAndYawDistant->x * -1) * cameraDistanceFromFocus;
+					pCoordinateDelta->z = sinf(pitchAndYawDistant->y * -1) * cameraDistanceFromFocus;
+
+					vector1->x = cameraPostion->x + pCoordinateDelta->x;
+					vector1->y = cameraPostion->y + pCoordinateDelta->y;
+					vector1->z = cameraPostion->z + pCoordinateDelta->z;
+				}
+				return vector1;
+			}
+
+
+			if ((uintptr_t)vector1 == (uintptr_t)(mainModuleBase + 0xB66380))
+			{
+				float tempSpeed = *pCameraMoveSpeed;
+				if (GetAsyncKeyState(VK_LSHIFT))
+				{
+					tempSpeed *= 3.0f;
+				}
+				if (*(uintptr_t*)(*pMainModuleBase + 0xB6B2D0))
+				{
+					//cameraType = (int*)(*pMainModuleBase + 0xB664BC);
+
+					pCoordinateDelta->x = cosf(pitchAndYawDistant->y * -1) * tempSpeed;
+					pCoordinateDelta->y = sinf(pitchAndYawDistant->x * -1) * tempSpeed;
+					pCoordinateDelta->z = sinf(pitchAndYawDistant->y * -1) * tempSpeed;
+
+					pCoordinateDeltaHalf->x = cosf(pitchAndYawDistant->y * -0.5f * PI) * tempSpeed;
+					pCoordinateDeltaHalf->y = sinf(pitchAndYawDistant->x * -0.5f * PI) * tempSpeed;
+					pCoordinateDeltaHalf->z = sinf(pitchAndYawDistant->y * -0.5f * PI) * tempSpeed;
+
+					if (GetAsyncKeyState(0x57))
+					{
+						vector1->x += pCoordinateDelta->x;
+						vector1->y += pCoordinateDelta->y;
+						vector1->z += pCoordinateDelta->z;
+					}
+					if (GetAsyncKeyState(0x53))
+					{
+						vector1->x -= pCoordinateDelta->x;
+						vector1->y -= pCoordinateDelta->y;
+						vector1->z -= pCoordinateDelta->z;
+					}
+					if (GetAsyncKeyState(0x41))
+					{
+						vector1->x += pCoordinateDeltaHalf->x;
+						vector1->z += pCoordinateDeltaHalf->z;
+					}
+					if (GetAsyncKeyState(0x44))
+					{
+						vector1->x -= pCoordinateDeltaHalf->x;
+						vector1->z -= pCoordinateDeltaHalf->z;
+					}
+					return vector1;
+				}
+			}
+		}
+
 		vector1->x = vector2->x;
 		vector1->y = vector2->y;
 		vector1->z = vector2->z;
@@ -124,7 +187,9 @@ bool get_present_pointer()
 }
 
 WNDPROC oWndProc;
+
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	
 	if (true && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
@@ -223,6 +288,7 @@ int WINAPI main(HINSTANCE hinstDLL)
 	while (!GetModuleHandle(L"flower_kernel.dll"))
 	{
 		Sleep(50);
+
 	}
 
 	mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
@@ -244,9 +310,90 @@ int WINAPI main(HINSTANCE hinstDLL)
 		return 1;
 	}
 
-	while (true) {
-		Sleep(50);
+	AllocConsole();
+	FILE* fDummy;
+	freopen_s(&fDummy, "CONOUT$", "w", stdout);
+	freopen_s(&fDummy, "CONOUT$", "w", stderr);
+	freopen_s(&fDummy, "CONIN$", "r", stdin);
+	std::cout.clear();
+	std::clog.clear();
+	std::cerr.clear();
+	std::cin.clear();
 
+	while (*(uintptr_t*)(mainModuleBase + 0xB74414) != 0x00000D00)
+	{
+	
+	}
+
+
+
+
+	const int sleepTime = 50;
+
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000E00;
+	//Sleep(sleepTime);
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00001400;
+	//Sleep(sleepTime);
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00001500;
+	//Sleep(sleepTime);
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00001600;
+	//Sleep(sleepTime);
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00001E00;
+	//Sleep(sleepTime);
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00001F00;
+	//Sleep(sleepTime);
+
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00002000;
+	//Sleep(sleepTime);
+
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000002;
+	//Sleep(sleepTime);
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000003;
+	//Sleep(sleepTime);
+
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000103;
+	//Sleep(sleepTime);
+
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00010103;
+	//Sleep(sleepTime+300);
+
+	//*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00010104;
+	//Sleep(sleepTime+300);
+
+	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000004;
+	////Sleep(sleepTime);
+	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000104;
+	////Sleep(sleepTime);
+	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000204;
+	////Sleep(sleepTime);
+	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000304;
+	////Sleep(sleepTime);
+	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000604;
+	////Sleep(sleepTime);
+
+	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000005;
+	////Sleep(sleepTime);
+	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000105;
+	////Sleep(sleepTime);
+
+	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000007;
+	////Sleep(sleepTime);
+	////*(uintptr_t*)(mainModuleBase + 0xB74414) = 0x00000107;
+	////Sleep(sleepTime);
+
+	//*(uintptr_t*)(mainModuleBase + 0xB65E75) = 0x000C00;
+
+	//*(uintptr_t*)(mainModuleBase + 0xB6B2AF) = 0x02;
+
+	int temp = 0x0;
+	int lastTemp = 0x0;
+	while (true) {
+		temp = *(uintptr_t*)(mainModuleBase + 0xB74414);
+		if (temp != lastTemp)
+		{
+			std::cout << std::hex << temp << std::endl;
+			lastTemp = temp;
+		}
 	}
 
 	//Cleanup
