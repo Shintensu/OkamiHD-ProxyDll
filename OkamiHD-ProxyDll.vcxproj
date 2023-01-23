@@ -19,8 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Detours.h" />
+    <ClInclude Include="src\Initialize.h" />
     <ClInclude Include="src\main.h" />
-    <ClInclude Include="src\Overlay.h" />
+    <ClInclude Include="src\MainThread.h" />
+    <ClInclude Include="src\MathStructs.h" />
+    <ClInclude Include="src\MinGuiMain.h" />
     <ClInclude Include="src\pch\pch.h" />
     <ClInclude Include="src\dllchainload\chainLoad.h" />
     <ClInclude Include="src\dllchainload\dinput8Proxy.h" />
@@ -49,9 +53,13 @@
     <ClInclude Include="vendor\minhook\src\trampoline.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Detours.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\Initialize.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Overlay.cpp" />
+    <ClCompile Include="src\MainThread.cpp" />
+    <ClCompile Include="src\MathStructs.cpp" />
+    <ClCompile Include="src\MinGuiMain.cpp" />
     <ClCompile Include="src\pch\pch.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_dx11.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_win32.cpp" />
@@ -144,6 +152,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>src; src / pch; src / dllchainload; src / utilities; vendor; vendor / imgui; vendor / minhook / include; vendor / minhook / src;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -158,6 +167,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>src; src / pch; src / dllchainload; src / utilities; vendor; vendor / imgui; vendor / minhook / include; vendor / minhook / src;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -173,7 +183,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>src; src/pch; src/dllchainload; src/utilities; vendor; vendor/imgui; vendor/minhook/include; vendor/minhook/src; </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src; src/pch; src/dllchainload; src/utilities; vendor; vendor/imgui; vendor/minhook/include; vendor/minhook/src;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -191,7 +201,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>src; src/pch; src/dllchainload; src/utilities; vendor; vendor/imgui; vendor/minhook/include; vendor/minhook/src; </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src; src / pch; src / dllchainload; src / utilities; vendor; vendor / imgui; vendor / minhook / include; vendor / minhook / src;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

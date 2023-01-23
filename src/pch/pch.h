@@ -19,7 +19,11 @@
 #include <string>
 #include <thread>
 
-#include "framework.h"
+#include <Windows.h>
 #include <TlHelp32.h>
 
+#include <d3d11.h>
+#include <thread>
+#include <cstdint>
+#include <iostream>
 #endif //PCH_H
