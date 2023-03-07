@@ -6,39 +6,25 @@
 
 #include "MinHook.h"
 
-#include "MathStructs.h"
+#include "GameStructs.h"
 
 #include "Detours.h"
 #include "Initialize.h"
 #include "MinGuiMain.h"
 #include "MainThread.h"
 
-
-#include "mem.h"
-#include "proc.h"
-#include "detourHook.h"
-
+#include "wk.h"
+#include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
 
 void MainMenu();
 void CameraWindow();
 void HackWindow();
+void ENetClientWindow();
 void DebugWindow();
 
-extern uintptr_t mainModuleBase;
-extern uintptr_t flowerKernelModuleBase;
+pl00** playerObjectPtr = nullptr;
 
-extern math::Vec2* pitchAndYawDistant;
-extern math::Vec2* pitchAndYaw;
-
-extern float* fov;
-
-extern float cameraMoveSpeed;
-
-extern int temp;
-extern int lastTemp;
-
-
-uintptr_t* playerObjectPtr = nullptr;
+gameObj::PlayerPacket playerPacket;
 
 bool open = true;
 
@@ -59,16 +45,36 @@ bool show_camera_window = true;
 bool show_hack_window = true;
 
 ImVec4 clear_color = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-float teleport[3];
+wk::math::cVec teleport(0.0f, 0.0f, 0.0f, 0.0f);
+
+float cameraMoveSpeed = 20.0f;
+float cameraDistanceFromFocus = 100.0f;
 
 bool cameraUpdates = false;
 bool freeCam;
+
+bool teleportBool = false;
+bool noclip = false;
+
+bool connectENet = false;
+
+char username[32];
+char serverip[16];
+
 
 // ImGui main function, since this is ran directly in the games main thread, do not pause the execution at any point as it will crash the game
 void ImGuiMain()
 {
     //getting pointer to player object
-    playerObjectPtr = (uintptr_t*)(mainModuleBase + 0xB6B2D0);
+    playerObjectPtr = (pl00**)(mainModuleBase + 0xB6B2D0);
+    
+    // Update localPlayer
+    if (playerObjectPtr[0])
+    {
+        strcpy_s(playerPacket.username, username);
+        playerPacket.mapID = *(int*)(mainModuleBase + 0xB6B2C8);
+        memcpy(playerPacket.localPlayer, *playerObjectPtr, 0x15FC);
+    }
 
     // Start the Dear ImGui frame
     ImGui_ImplDX11_NewFrame();
@@ -78,36 +84,94 @@ void ImGuiMain()
     // Menu
     MainMenu();
 
+    if (show_demo_window)
+        ImGui::ShowDemoWindow(&show_demo_window);
+    if (show_metrics_window)
+        ImGui::ShowMetricsWindow();
+    if (show_about_window)
+        ImGui::ShowAboutWindow();
+    if (show_debug_window)
+        ImGui::ShowDebugLogWindow();
+    if (show_style_editor_window)
+        ImGui::ShowStyleEditor();
+    if (show_style_selector_window)
+        ImGui::ShowStyleSelector("Style Editor");
+    if (show_font_selector_window)
+        ImGui::ShowFontSelector("Style Selector");
+    if (show_user_guide_window)
+        ImGui::ShowUserGuide();
+
+    // Rendering
+    ImGui::Render();
+}
+
+
+
+// the main menu of the overlay
+void MainMenu()
+{
+    ImGui::Begin("OkamiHD ImGui Overlay - Main Menu");
+
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("Menu"))
+        {
+            ImGui::MenuItem("File");
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Windows"))
+        {
+            ImGui::MenuItem("Camera Hacks", NULL, &show_camera_window);
+            ImGui::MenuItem("Player Hacks", NULL, &show_hack_window);
+            ImGui::MenuItem("Default ImGui Debug Windows", NULL, &show_debug);
+            ImGui::EndMenu();
+        }
+        //if (ImGui::MenuItem("MenuItem")) {} // You can also use MenuItem() inside a menu bar!
+        if (ImGui::BeginMenu("Tools"))
+        {
+            ImGui::MenuItem("Test");
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
+    ImGui::Text("Okami Internal Overlay | ImGui Version: (%s) (%d)", IMGUI_VERSION, IMGUI_VERSION_NUM);
+    ImGui::Spacing();
+
+    if (ImGui::CollapsingHeader("Help"))
+    {
+        ImGui::Text("ABOUT THIS OVERLAY:");
+        ImGui::BulletText("This is an all in one overlay for debugging, analyzing or just plain messing with the game.");
+        ImGui::BulletText("It also contains a client to connect to Okami Servers.");
+        ImGui::BulletText("Everything is provided as is, no guarantees.");
+        ImGui::Separator();
+
+        ImGui::Text("USER GUIDE:");
+        ImGui::ShowUserGuide();
+    }
+
     // Camera Window
     CameraWindow();
 
     // Hack Window
     HackWindow();
 
+    // ENet Client
+    ENetClientWindow();
+
     // Debug Window
-    DebugWindow();
+    DebugWindow();  
 
-    // Rendering
-    ImGui::Render();
-}
-
-// the main menu of the overlay
-void MainMenu()
-{
-    ImGui::Begin("OkamiHD ImGui Overlay - Main Menu");
-    ImGui::Checkbox("Camera Hacks", &show_camera_window);
-    ImGui::Checkbox("Player Hacks", &show_hack_window);
-    ImGui::Checkbox("Default ImGui Debug Windows", &show_debug);      // Edit bools storing our window open/close state
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
     ImGui::End();
 }
 
 // a window containing a bunch of useful stats about the camera, as well as a freecam hack
 void CameraWindow()
 {
-    if (show_camera_window)
+    if (ImGui::CollapsingHeader("Camera"))
     {
-        ImGui::Begin("Camera", &show_camera_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
         ImGui::InputFloat3("Camera Focus", ((float*)(mainModuleBase + 0xB66370)), "%.3f", 0);
         ImGui::InputFloat3("Camera Position", ((float*)(mainModuleBase + 0xB66380)), "%.3f", 0);
         ImGui::InputFloat2("Camera Pitch and Yaw", (float*)pitchAndYawDistant, "%.3f", 0);
@@ -132,16 +196,14 @@ void CameraWindow()
                 }
             }
         }
-        ImGui::End();
     }
 }
 
 // a window containing a bunch of player object information and hacks
 void HackWindow()
 {
-    if (show_hack_window)
+    if (ImGui::CollapsingHeader("Player Hacks"))
     {
-        ImGui::Begin("Hacks", &show_hack_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
         if (*playerObjectPtr)
         {
             ImGui::Checkbox("Health", &bHealth);
@@ -175,18 +237,29 @@ void HackWindow()
                     *(float*)(mainModuleBase + 0x6AF03C) = 6.900000095f;
                 }
             }
-            ImGui::InputFloat3("Player Position", (float*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0xA8, 0x0 }), "%.3f", 0);
-            ImGui::InputFloat3("Teleport Destination", teleport, "%.3f", 0);
-            if (ImGui::Button("Teleport"))
+            ImGui::InputFloat4("Player Position",(float*)playerObjectPtr[0]->coordinatePointer, "%.3f", 0);
+            ImGui::InputFloat4("Teleport Destination", (float*)&teleport, "%.3f", 0);
+            if (teleportBool)
             {
                 *(BYTE*)(mainModuleBase + 0xB6B2BB) ^= 1 << 1;
-                *(float*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0xA8, 0x0 }) = teleport[0];
-                *(float*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0xA8, 0x4 }) = teleport[1];
-                *(float*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0xA8, 0x8 }) = teleport[2];
-                *(BYTE*)(mainModuleBase + 0xB6B2BB) ^= 1 << 1;
+                teleportBool = false;
             }
+            if (ImGui::Button("Teleport"))
+            {
+                if (!noclip)
+                {
+                    *(BYTE*)(mainModuleBase + 0xB6B2BB) ^= 1 << 1;
+                    teleportBool = true;
+                }
+                *playerObjectPtr[0]->coordinatePointer = teleport;
+            }
+
             if (ImGui::Button("No Clip"))
+            {
                 *(uintptr_t*)(mainModuleBase + 0xB6B2BB) ^= 1 << 1;
+                noclip = !noclip;
+            }
+
 
             //continous writes
             if (bHealth)
@@ -209,29 +282,127 @@ void HackWindow()
 
             if (bmovementCheat)
             {
-                //number of jumps and air tackles used
-                *(BYTE*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0xDE0, 0x1145 }) = 0;
-                //number of air tackles used
-                *(BYTE*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0xDE0, 0x1146 }) = 0;
-                //Dash Meter
-                *(WORD*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0x1174 }) = 351;
+                ////number of jumps and air tackles used
+                //*(BYTE*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0xDE0, 0x1145 }) = 0;
+                ////number of air tackles used
+                //*(BYTE*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0xDE0, 0x1146 }) = 0;
+                ////Dash Meter
+                //*(WORD*)mem::FindDMAAddy((uintptr_t)(playerObjectPtr), { 0x1174 }) = 351;
             }
         }
         else
         {
             ImGui::Text("No player object found!");
         }
-        ImGui::End();
+    }
+}
+
+void ENetClientWindow()
+{
+    if (ImGui::CollapsingHeader("ENet Client"))
+    {
+        if (ImGui::BeginTable("User Input", 2))
+        {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Username:");
+            ImGui::TableSetColumnIndex(1);
+            ImGui::InputText("##Username", username, 32);
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::Text("Server IP:"); 
+            ImGui::TableSetColumnIndex(1);
+            ImGui::InputText("##Server IP", serverip, 16);
+
+            ImGui::EndTable();
+        }
+
+        /*ImGui::Text("Username:"); ImGui::SameLine(); ImGui::InputText("##Username", username, 32);
+        ImGui::Text("Server IP:"); ImGui::SameLine(); ImGui::InputText("##Server IP", serverip, 16);*/
+
+        if (!connectENet)
+        {
+            if (!isConnected)
+            {
+                if (ImGui::Button("Connect"))
+                {
+                    if (!strcmp(username, ""))
+                    {
+                        std::cout << "Please enter a username!" << std::endl;
+                    }
+                    else if (!strcmp(serverip, ""))
+                    {
+                        std::cout << "Please enter an ip4 address!" << std::endl;
+                    }
+                    else
+                    {
+                        connectENet = true;
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (isConnected)
+            {
+                if (ImGui::Button("Disconnect"))
+                {
+                    connectENet = false;
+                }
+            }
+        }
+        
+        if (isConnected)
+        {
+            if (playerList && playerPacketList)
+            {
+                if (ImGui::CollapsingHeader("Player List"))
+                {
+                    if (playerList[0])
+                    {
+                        for (int i = 0; i < playerListCount; i++)
+                        {
+                            ImGui::Text(playerPacketList[i].username);
+                            ImGui::Text("X: %.3f Y: %.3f Z: %.3f", playerList[i]->coordinatePointer->identity.x, playerList[i]->coordinatePointer->identity.y, playerList[i]->coordinatePointer->identity.z);
+                            ImGui::Text("Pitch: %.3f Yaw: %.3f Roll: %.3f", playerList[i]->rotation.identity.x, playerList[i]->rotation.identity.y, playerList[i]->rotation.identity.z);
+                            ImGui::Text("Area ID: %X", playerPacketList[i].mapID);
+                            ImGui::Text("Animation ID: %p", playerList[i]->mtb3CamPointer);
+                            ImGui::Text("Movement Stage: %X", playerList[i]->movementStage);
+                            ImGui::Separator();
+                        }
+                    }
+                }
+            }
+            if (playerPointerList)
+            {
+                if (ImGui::CollapsingHeader("pl00 Entity List"))
+                {
+                    if (playerPointerList[0])
+                    {
+                        for (int i = 0; i < playerListCount; i++)
+                        {
+                            ImGui::Text("Entity Pointer: %p", playerPointerList[i]);
+                            ImGui::Text("X: %.3f Y: %.3f Z: %.3f", playerPointerList[i]->coordinatePointer->identity.x, playerPointerList[i]->coordinatePointer->identity.y, playerPointerList[i]->coordinatePointer->identity.z);
+                            ImGui::Text("Pitch: %.3f Yaw: %.3f Roll: %.3f", playerPointerList[i]->rotation.identity.x , playerPointerList[i]->rotation.identity.y, playerPointerList[i]->rotation.identity.z);
+                            ImGui::Text("Animation Data Pointer: %p", playerPointerList[i]->mtb3CamPointer);
+                            ImGui::Text("Movement Stage: %X", playerPointerList[i]->movementStage);
+                            ImGui::Separator();
+                        }
+                    }
+                }
+            }
+        }
+
+        // TODO: Console/Logging of stdout in ImGui instead of external console
     }
 }
 
 // a window containing various checkboxes to load default ImGui windows
 void DebugWindow()
 {
-    if (show_debug)
+    if (ImGui::CollapsingHeader("Default ImGui"))
     {
-        ImGui::Begin("Debug Windows", &show_debug);
-
         ImGui::Checkbox("About", &show_about_window);
         ImGui::Checkbox("User Guide", &show_user_guide_window);
         ImGui::Checkbox("Demo Window", &show_demo_window);
@@ -239,25 +410,7 @@ void DebugWindow()
         ImGui::Checkbox("Metrics", &show_metrics_window);
         ImGui::Checkbox("Debug", &show_debug_window);
 
-        ImGui::Checkbox("Style Editor", &show_style_editor_window); 
-        ImGui::Checkbox("Style Selector", &show_font_selector_window); 
-        ImGui::End();
+        ImGui::Checkbox("Style Editor", &show_style_editor_window);
+        ImGui::Checkbox("Style Selector", &show_font_selector_window);
     }
-
-    if (show_demo_window)
-        ImGui::ShowDemoWindow(&show_demo_window);
-    if (show_metrics_window)
-        ImGui::ShowMetricsWindow();
-    if (show_about_window)
-        ImGui::ShowAboutWindow();
-    if (show_debug_window)
-        ImGui::ShowDebugLogWindow();
-    if (show_style_editor_window)
-        ImGui::ShowStyleEditor();
-    if (show_style_selector_window)
-        ImGui::ShowStyleSelector("Style Editor");
-    if (show_font_selector_window)
-        ImGui::ShowFontSelector("Style Selector");
-    if (show_user_guide_window)
-        ImGui::ShowUserGuide();
 }

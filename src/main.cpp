@@ -7,7 +7,7 @@
 
 #include "MinHook.h"
 
-#include "MathStructs.h"
+#include "GameStructs.h"
 
 #include "main.h"
 
@@ -16,13 +16,16 @@
 #include "MainThread.h"
 
 // Globals
+int errorCode;
+bool isReleased;
+
 HINSTANCE dll_handle;
 WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // WndProc override, calls back to the games og WndProc
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	
+
 	// pass calls to ImGui
 	if (true && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
 		return true;
@@ -36,6 +39,7 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		//EnableMouseInPointer(TRUE);
 		ClipCursor(NULL);
 		ShowCursor(TRUE);
+		isReleased = true;
 	}
 	// stop calls to the original function if ImGui is hovered over and keep the cursor released
 	if (io.WantCaptureMouse)
@@ -48,10 +52,16 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	else if (uMsg == WM_LBUTTONDOWN)
 	{
 		while (ShowCursor(FALSE) > -1);
+		isReleased = false;
 	}
+
+	if (isReleased)
+	{
+		return true;
+	}
+
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
-
 
 // getting a pointer to the games present function
 typedef long(__stdcall* present)(IDXGISwapChain*, UINT, UINT);
@@ -74,7 +84,7 @@ bool get_present_pointer()
 	ID3D11Device* device;
 
 	const D3D_FEATURE_LEVEL feature_levels[] = { D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_0, };
-	if (D3D11CreateDeviceAndSwapChain(NULL,D3D_DRIVER_TYPE_HARDWARE, NULL, 0, feature_levels, 2, D3D11_SDK_VERSION, &sd, &swap_chain, &device, nullptr, nullptr) == S_OK)
+	if (D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, feature_levels, 2, D3D11_SDK_VERSION, &sd, &swap_chain, &device, nullptr, nullptr) == S_OK)
 	{
 		void** p_vtable = *reinterpret_cast<void***>(swap_chain);
 		swap_chain->Release();
@@ -125,7 +135,6 @@ long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_interval, 
 	return p_present(p_swap_chain, sync_interval, flags);
 }
 
-
 DWORD __stdcall EjectThread(LPVOID lpParameter) {
 	Sleep(100);
 	FreeLibraryAndExitThread(dll_handle, 0);
@@ -151,8 +160,7 @@ int WINAPI main(HINSTANCE hinstDLL)
 	// initialize minhhook, detours/overrides and some important values
 	Initialize();
 	// main thread that runs seperately from the game, not to be confused with the injected MinGuiMain function that runs in the actual thread of the game and should thus never contain any hard stops in code execution
-	MainThread();
-
+	errorCode = MainThread();
 
 	{
 		//Cleanup
@@ -175,5 +183,5 @@ int WINAPI main(HINSTANCE hinstDLL)
 		CreateThread(0, 0, EjectThread, 0, 0, 0);
 	}
 
-	return 0;
+	return errorCode;
 }

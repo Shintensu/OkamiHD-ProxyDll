@@ -23,8 +23,20 @@
     <ClInclude Include="src\Initialize.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\MainThread.h" />
-    <ClInclude Include="src\MathStructs.h" />
+    <ClInclude Include="src\GameStructs.h" />
     <ClInclude Include="src\MinGuiMain.h" />
+    <ClInclude Include="src\okamiDecomp\flower_kernel.dll\include\hx.h" />
+    <ClInclude Include="src\okamiDecomp\flower_kernel.dll\include\m2.h" />
+    <ClInclude Include="src\okamiDecomp\flower_kernel.dll\include\wk.h" />
+    <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cModel\cModel.h" />
+    <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cModel\cObj\cObj.h" />
+    <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cModel\cObj\cObjBase\cObjBase.h" />
+    <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cModel\cObj\cObjBase\pl\cWolfHuman.h" />
+    <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cModel\cObj\cObjBase\pl\pl00.h" />
+    <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cModel\cObj\cObjBase\pl\pl02.h" />
+    <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cModel\cObj\cObjBase\pl\plwp.h" />
+    <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cModel\cObj\cObjBase\pl\plwpsub.h" />
+    <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cParts.h" />
     <ClInclude Include="src\pch\pch.h" />
     <ClInclude Include="src\dllchainload\chainLoad.h" />
     <ClInclude Include="src\dllchainload\dinput8Proxy.h" />
@@ -40,9 +52,6 @@
     <ClInclude Include="vendor\imgui\imstb_rectpack.h" />
     <ClInclude Include="vendor\imgui\imstb_textedit.h" />
     <ClInclude Include="vendor\imgui\imstb_truetype.h" />
-    <ClInclude Include="src\utilities\detourHook.h" />
-    <ClInclude Include="src\utilities\mem.h" />
-    <ClInclude Include="src\utilities\proc.h" />
     <ClInclude Include="vendor\minhook\include\MinHook.h" />
     <ClInclude Include="vendor\minhook\src\buffer.h" />
     <ClInclude Include="vendor\minhook\src\hde\hde32.h" />
@@ -58,7 +67,6 @@
     <ClCompile Include="src\Initialize.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainThread.cpp" />
-    <ClCompile Include="src\MathStructs.cpp" />
     <ClCompile Include="src\MinGuiMain.cpp" />
     <ClCompile Include="src\pch\pch.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_dx11.cpp" />
@@ -68,9 +76,6 @@
     <ClCompile Include="vendor\imgui\imgui_draw.cpp" />
     <ClCompile Include="vendor\imgui\imgui_tables.cpp" />
     <ClCompile Include="vendor\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\utilities\detourHook.cpp" />
-    <ClCompile Include="src\utilities\mem.cpp" />
-    <ClCompile Include="src\utilities\proc.cpp" />
     <ClCompile Include="vendor\minhook\src\buffer.c" />
     <ClCompile Include="vendor\minhook\src\hde\hde32.c" />
     <ClCompile Include="vendor\minhook\src\hde\hde64.c" />
@@ -80,6 +85,9 @@
   <ItemGroup>
     <None Include="PropertySheet.props" />
     <None Include="src\dllchainload\dinput8.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="vendor\enet\out\build\x64-Debug\enet.lib" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -183,12 +191,12 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>src; src/pch; src/dllchainload; src/utilities; vendor; vendor/imgui; vendor/minhook/include; vendor/minhook/src;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src/pch;src/dllchainload;src/utilities;src/OkamiHD-Decomp/main.dll/include;src/OkamiHD-Decomp/flower_kernel.dll/include;vendor;vendor/enet;vendor/enet/include;vendor/imgui;vendor/minhook/include;vendor/minhook/src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;winmm.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>src/dllchainload/dinput8.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>

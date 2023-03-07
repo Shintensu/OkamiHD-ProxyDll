@@ -6,26 +6,41 @@
 
 #include "MinHook.h"
 
-#include "MathStructs.h"
+#include "GameStructs.h"
 
-extern math::Vec3* detourCopyVec3(math::Vec3* vector1, math::Vec3* vector2);
-extern long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags);
+#include "main.h"
+#include "Initialize.h"
+#include "Detours.h"
 
-typedef float* (__cdecl* CopyVec3)(float*, float*);
-typedef long(__stdcall* present)(IDXGISwapChain*, UINT, UINT);
-
-extern present p_present;
-extern present p_present_target;
-
+#include "wk.h"
 
 uintptr_t mainModuleBase;
 uintptr_t flowerKernelModuleBase;
 
-math::Vec2* pitchAndYawDistant;
-math::Vec2* pitchAndYaw;
+CopyVec3 pVec3 = nullptr;
+PlayerMove pPlayerMove = nullptr;
+PlayerGetInput pPlayerGetInput = nullptr;
+PlayerConstructor pPlayerConstructor = nullptr;
+ObjectConstructor pObjectConstructor = nullptr;
+cModelAnimationUpdate pcModelAnimationUpdate = nullptr;
+
+uintptr_t copyVec3Address;
+uintptr_t playerMoveAddress;
+uintptr_t playerGetInputAddress;
+uintptr_t playerConstructorAddress;
+uintptr_t objectConstructorAdress;
+uintptr_t cModelAnimationUpdateAddress;
+
+CopyVec3 pVec3target;
+PlayerMove pPlayerMovetarget;
+PlayerGetInput pPlayerGetInputtarget;
+PlayerConstructor pPlayerConstructortarget;
+ObjectConstructor pObjectConstructorTarget;
+cModelAnimationUpdate pcModelAnimationUpdateTarget;
 
 float* fov;
-void* pVec3 = nullptr;
+wk::math::cVec* pitchAndYawDistant;
+wk::math::cVec* pitchAndYaw;
 
 // somewhat self explanatory in what it does, if you have any questions about MinHook, there is plenty of explanations on youtube
 int Initialize()
@@ -52,16 +67,49 @@ int Initialize()
 	flowerKernelModuleBase = (uintptr_t)GetModuleHandle(L"flower_kernel.dll");
 
 	// get pitch, yaw and fov pointers
-	pitchAndYawDistant = (math::Vec2*)(mainModuleBase + 0xB66390);
-	pitchAndYaw = (math::Vec2*)(mainModuleBase + 0xB6659C);
+	pitchAndYawDistant = (wk::math::cVec*)(mainModuleBase + 0xB66390);
+	pitchAndYaw = (wk::math::cVec*)(mainModuleBase + 0xB6659C);
 	fov = (float*)(mainModuleBase + 0xB663B0);
 
 	// create detour hook for the CopyVec3 function in Okami
-	uintptr_t addressOfFunction = (flowerKernelModuleBase + 0x1A9D0);
+	copyVec3Address = (flowerKernelModuleBase + 0x1A9D0);
+	pVec3target = reinterpret_cast<CopyVec3>(copyVec3Address);
+	if (MH_CreateHook(reinterpret_cast<void**>(copyVec3Address), &detourCopyVec3, reinterpret_cast<void**>(&pVec3)) != MH_OK) {
+		return 1;
+	}
 
-	CopyVec3 pVec3target = reinterpret_cast<CopyVec3>(addressOfFunction);
+	// create detour hook for the PlayerMove function in Okami
+	playerMoveAddress = (mainModuleBase + 0x3AF020);
+	pPlayerMovetarget = reinterpret_cast<PlayerMove>(playerMoveAddress);
+	if (MH_CreateHook(reinterpret_cast<void**>(playerMoveAddress), &detourPlayerMove, reinterpret_cast<void**>(&pPlayerMove)) != MH_OK) {
+		return 1;
+	}
 
-	if (MH_CreateHook(reinterpret_cast<void**>(addressOfFunction), &detourCopyVec3, reinterpret_cast<void**>(&pVec3)) != MH_OK) {
+	// create detour hook for the PlayerGetInput function in Okami
+	playerGetInputAddress = (mainModuleBase + 0x3ACF90);
+	pPlayerGetInputtarget = reinterpret_cast<PlayerGetInput>(playerGetInputAddress);
+	if (MH_CreateHook(reinterpret_cast<void**>(playerGetInputAddress), &detourPlayerGetInput, reinterpret_cast<void**>(&pPlayerGetInput)) != MH_OK) {
+		return 1;
+	}
+
+	// create detour hook for the PlayerConstructor in Okami
+	playerConstructorAddress = (mainModuleBase + 0x3D2EC0);
+	pPlayerConstructortarget = reinterpret_cast<PlayerConstructor>(playerConstructorAddress);
+	if (MH_CreateHook(reinterpret_cast<void**>(playerConstructorAddress), &detourPlayerConstructor, reinterpret_cast<void**>(&pPlayerConstructor)) != MH_OK) {
+		return 1;
+	}
+
+	// create detour hook for the ObjectConstructor in Okami
+	objectConstructorAdress = (mainModuleBase + 0x359DE0);
+	pObjectConstructorTarget = reinterpret_cast<ObjectConstructor>(objectConstructorAdress);
+	if (MH_CreateHook(reinterpret_cast<void**>(objectConstructorAdress), &detourObjectConstructor, reinterpret_cast<void**>(&pObjectConstructor)) != MH_OK) {
+		return 1;
+	}
+
+	// create detour hook for the cModel::AnimatioUpdate(Not actually, only the transposing of the matrix) in Okami
+	cModelAnimationUpdateAddress = (flowerKernelModuleBase + 0x2a86);
+	pcModelAnimationUpdateTarget = reinterpret_cast<cModelAnimationUpdate>(cModelAnimationUpdateAddress);
+	if (MH_CreateHook(reinterpret_cast<void**>(cModelAnimationUpdateAddress), &detourcModelUpdateAnimation, reinterpret_cast<void**>(&pcModelAnimationUpdate)) != MH_OK) {
 		return 1;
 	}
 
