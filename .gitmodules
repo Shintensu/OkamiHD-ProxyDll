@@ -9,4 +9,4 @@
 	url = https://github.com/lsalzman/enet.git
 [submodule "src/OkamiHD-Decomp"]
 	path = src/OkamiHD-Decomp
-	url = https://github.com/Shintensu/OkamiHD-SplitMD.git
+	url = https://github.com/Shintensu/OkamiHD-Decomp.git
