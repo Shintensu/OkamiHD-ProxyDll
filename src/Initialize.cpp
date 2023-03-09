@@ -14,6 +14,14 @@
 
 #include "wk.h"
 
+int* entityHeapExpansionSize = nullptr;
+
+bool* useUnknownMode = nullptr;
+bool* useEncryption = nullptr;
+
+short* encryptionJmpInstruction1 = nullptr;
+short* encryptionJmpInstruction2 = nullptr;
+
 uintptr_t mainModuleBase;
 uintptr_t flowerKernelModuleBase;
 
@@ -65,6 +73,32 @@ int Initialize()
 	// get module base addresses
 	mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
 	flowerKernelModuleBase = (uintptr_t)GetModuleHandle(L"flower_kernel.dll");
+
+	//Expand Player Heap
+	entityHeapExpansionSize = (int*)(mainModuleBase + 0x12CAC5);
+	DWORD oldprotect;
+	VirtualProtect(entityHeapExpansionSize, 4, PAGE_EXECUTE_READWRITE, &oldprotect);
+	*entityHeapExpansionSize = 0x90000000; // Default is  0x00200000
+	VirtualProtect(entityHeapExpansionSize, 4, oldprotect, &oldprotect);
+
+	//Set encryption mode
+	useEncryption = (bool*)(mainModuleBase + 0x7E6B44);
+	*useEncryption = 0; // Default is 1
+
+	if (!*useEncryption)
+	{
+		encryptionJmpInstruction1 = (short*)(mainModuleBase + 0x4B5C6D);
+
+		VirtualProtect(encryptionJmpInstruction1, 2, PAGE_EXECUTE_READWRITE, &oldprotect);
+		*encryptionJmpInstruction1 = 0x9090; // Default is  0x0C7F
+		VirtualProtect(encryptionJmpInstruction1, 2, oldprotect, &oldprotect);
+
+		encryptionJmpInstruction2 = (short*)(mainModuleBase + 0x4B5FA4);
+		
+		VirtualProtect(encryptionJmpInstruction2, 2, PAGE_EXECUTE_READWRITE, &oldprotect);
+		*encryptionJmpInstruction2 = 0x9090; // Default is  0x0C7F
+		VirtualProtect(encryptionJmpInstruction2, 2, oldprotect, &oldprotect);
+	}
 
 	// get pitch, yaw and fov pointers
 	pitchAndYawDistant = (wk::math::cVec*)(mainModuleBase + 0xB66390);
