@@ -26,25 +26,32 @@ uintptr_t mainModuleBase;
 uintptr_t flowerKernelModuleBase;
 
 CopyVec3 pVec3 = nullptr;
-PlayerMove pPlayerMove = nullptr;
-PlayerGetInput pPlayerGetInput = nullptr;
-PlayerConstructor pPlayerConstructor = nullptr;
-ObjectConstructor pObjectConstructor = nullptr;
-cModelAnimationUpdate pcModelAnimationUpdate = nullptr;
-
 uintptr_t copyVec3Address;
-uintptr_t playerMoveAddress;
-uintptr_t playerGetInputAddress;
-uintptr_t playerConstructorAddress;
-uintptr_t objectConstructorAdress;
-uintptr_t cModelAnimationUpdateAddress;
-
 CopyVec3 pVec3target;
+
+PlayerMove pPlayerMove = nullptr;
+uintptr_t playerMoveAddress;
 PlayerMove pPlayerMovetarget;
+
+PlayerGetInput pPlayerGetInput = nullptr;
+uintptr_t playerGetInputAddress;
 PlayerGetInput pPlayerGetInputtarget;
+
+PlayerConstructor pPlayerConstructor = nullptr;
+uintptr_t playerConstructorAddress;
 PlayerConstructor pPlayerConstructortarget;
+
+ObjectConstructor pObjectConstructor = nullptr;
+uintptr_t objectConstructorAdress;
 ObjectConstructor pObjectConstructorTarget;
+
+cModelAnimationUpdate pcModelAnimationUpdate = nullptr;
+uintptr_t cModelAnimationUpdateAddress;
 cModelAnimationUpdate pcModelAnimationUpdateTarget;
+
+cpadUpdate pcpadUpdate = nullptr;
+uintptr_t cpadUpdateAddress;
+cpadUpdate pCpadUpdateTarget;
 
 float* fov;
 wk::math::cVec* pitchAndYawDistant;
@@ -147,8 +154,20 @@ int Initialize()
 		return 1;
 	}
 
+	// create detour hook for the cpad::Update function in Okami
+	cpadUpdateAddress = (mainModuleBase + 0x186650);
+	pCpadUpdateTarget = reinterpret_cast<cpadUpdate>(cpadUpdateAddress);
+	if (MH_CreateHook(reinterpret_cast<void**>(cpadUpdateAddress), &detourCpadUpdate, reinterpret_cast<void**>(&pcpadUpdate)) != MH_OK) {
+		return 1;
+	}
+
 	//enable present function detour
 	if (MH_EnableHook(p_present_target) != MH_OK) {
+		return 1;
+	}
+
+	//enable cpad::Update detour
+	if (MH_EnableHook(pCpadUpdateTarget) != MH_OK) {
 		return 1;
 	}
 }

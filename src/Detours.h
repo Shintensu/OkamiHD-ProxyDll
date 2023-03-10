@@ -14,3 +14,5 @@ void detourPlayerConstructor();
 cObjBase* detourObjectConstructor(unsigned long long objectType, unsigned long long objectSize);
 
 void detourcModelUpdateAnimation(wk::math::cMatrix* thisModel, wk::math::cMatrix* transMatrix);
+
+void detourCpadUpdate(uintptr_t* thisCpad);

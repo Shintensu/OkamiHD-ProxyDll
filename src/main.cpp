@@ -42,7 +42,7 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		isReleased = true;
 	}
 	// stop calls to the original function if ImGui is hovered over and keep the cursor released
-	if (io.WantCaptureMouse)
+	if (io.WantCaptureMouse && isReleased)
 	{
 		ClipCursor(NULL);
 		ShowCursor(TRUE);

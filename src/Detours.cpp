@@ -170,3 +170,12 @@ void detourcModelUpdateAnimation(wk::math::cMatrix* thisModel, wk::math::cMatrix
 	}
 	pcModelAnimationUpdate(thisModel, transMatrix);
 }
+
+void detourCpadUpdate(uintptr_t* thisCpad)
+{
+	if (isReleased)
+	{
+		return;
+	}
+	return pcpadUpdate(thisCpad);
+}
