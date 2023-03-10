@@ -4,13 +4,13 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
-#include "MinHook.h"
-
 #include "GameStructs.h"
 
 #include "main.h"
 #include "Initialize.h"
 #include "Detours.h"
+
+#include "FunctionHook.h"
 
 #include "wk.h"
 
@@ -25,37 +25,20 @@ short* encryptionJmpInstruction2 = nullptr;
 uintptr_t mainModuleBase;
 uintptr_t flowerKernelModuleBase;
 
-CopyVec3 pVec3 = nullptr;
-uintptr_t copyVec3Address;
-CopyVec3 pVec3target;
+FunctionHook<present>* presentHook;
 
-PlayerMove pPlayerMove = nullptr;
-uintptr_t playerMoveAddress;
-PlayerMove pPlayerMovetarget;
-
-PlayerGetInput pPlayerGetInput = nullptr;
-uintptr_t playerGetInputAddress;
-PlayerGetInput pPlayerGetInputtarget;
-
-PlayerConstructor pPlayerConstructor = nullptr;
-uintptr_t playerConstructorAddress;
-PlayerConstructor pPlayerConstructortarget;
-
-ObjectConstructor pObjectConstructor = nullptr;
-uintptr_t objectConstructorAdress;
-ObjectConstructor pObjectConstructorTarget;
-
-cModelAnimationUpdate pcModelAnimationUpdate = nullptr;
-uintptr_t cModelAnimationUpdateAddress;
-cModelAnimationUpdate pcModelAnimationUpdateTarget;
-
-cpadUpdate pcpadUpdate = nullptr;
-uintptr_t cpadUpdateAddress;
-cpadUpdate pCpadUpdateTarget;
+FunctionHook<CopyVec3>* copyVec3Hook;
+FunctionHook<PlayerMove>* playerMoveHook;
+FunctionHook<PlayerGetInput>* playerGetInputHook;
+FunctionHook<PlayerConstructor>* playerConstructorHook;
+FunctionHook<ObjectConstructor>* objectConstructorHook;
+FunctionHook<cModelAnimationUpdate>* cModelAnimationUpdateHook;
+FunctionHook<cpadUpdate>* cpadHook;
 
 float* fov;
 wk::math::cVec* pitchAndYawDistant;
 wk::math::cVec* pitchAndYaw;
+
 
 // somewhat self explanatory in what it does, if you have any questions about MinHook, there is plenty of explanations on youtube
 int Initialize()
@@ -66,10 +49,10 @@ int Initialize()
 		return 1;
 	}
 
-	// create detour hook for the present function
-	if (MH_CreateHook(reinterpret_cast<void**>(p_present_target), &detour_present, reinterpret_cast<void**>(&p_present)) != MH_OK) {
+	// create detour hook for cpad::Update
+	presentHook = new FunctionHook<present>(p_present_target, &detour_present);
+	if (presentHook->CreateHook() || presentHook->EnableHook())
 		return 1;
-	}
 
 	// wait until flower_kernel.dll is loaded
 	while (!GetModuleHandle(L"flower_kernel.dll"))
@@ -113,61 +96,37 @@ int Initialize()
 	fov = (float*)(mainModuleBase + 0xB663B0);
 
 	// create detour hook for the CopyVec3 function in Okami
-	copyVec3Address = (flowerKernelModuleBase + 0x1A9D0);
-	pVec3target = reinterpret_cast<CopyVec3>(copyVec3Address);
-	if (MH_CreateHook(reinterpret_cast<void**>(copyVec3Address), &detourCopyVec3, reinterpret_cast<void**>(&pVec3)) != MH_OK) {
+	copyVec3Hook = new FunctionHook<CopyVec3>(reinterpret_cast<CopyVec3>(flowerKernelModuleBase + 0x1A9D0), &detourCopyVec3);
+	if (copyVec3Hook->CreateHook())
 		return 1;
-	}
 
 	// create detour hook for the PlayerMove function in Okami
-	playerMoveAddress = (mainModuleBase + 0x3AF020);
-	pPlayerMovetarget = reinterpret_cast<PlayerMove>(playerMoveAddress);
-	if (MH_CreateHook(reinterpret_cast<void**>(playerMoveAddress), &detourPlayerMove, reinterpret_cast<void**>(&pPlayerMove)) != MH_OK) {
+	playerMoveHook = new FunctionHook<PlayerMove>(reinterpret_cast<PlayerMove>(mainModuleBase + 0x3AF020), &detourPlayerMove);
+	if (playerMoveHook->CreateHook())
 		return 1;
-	}
 
 	// create detour hook for the PlayerGetInput function in Okami
-	playerGetInputAddress = (mainModuleBase + 0x3ACF90);
-	pPlayerGetInputtarget = reinterpret_cast<PlayerGetInput>(playerGetInputAddress);
-	if (MH_CreateHook(reinterpret_cast<void**>(playerGetInputAddress), &detourPlayerGetInput, reinterpret_cast<void**>(&pPlayerGetInput)) != MH_OK) {
+	playerGetInputHook = new FunctionHook<PlayerGetInput>(reinterpret_cast<PlayerGetInput>(mainModuleBase + 0x3ACF90), &detourPlayerGetInput);
+	if (playerGetInputHook->CreateHook())
 		return 1;
-	}
 
 	// create detour hook for the PlayerConstructor in Okami
-	playerConstructorAddress = (mainModuleBase + 0x3D2EC0);
-	pPlayerConstructortarget = reinterpret_cast<PlayerConstructor>(playerConstructorAddress);
-	if (MH_CreateHook(reinterpret_cast<void**>(playerConstructorAddress), &detourPlayerConstructor, reinterpret_cast<void**>(&pPlayerConstructor)) != MH_OK) {
+	playerConstructorHook = new FunctionHook<PlayerConstructor>(reinterpret_cast<PlayerConstructor>(mainModuleBase + 0x3D2EC0), &detourPlayerConstructor);
+	if (playerConstructorHook->CreateHook())
 		return 1;
-	}
 
 	// create detour hook for the ObjectConstructor in Okami
-	objectConstructorAdress = (mainModuleBase + 0x359DE0);
-	pObjectConstructorTarget = reinterpret_cast<ObjectConstructor>(objectConstructorAdress);
-	if (MH_CreateHook(reinterpret_cast<void**>(objectConstructorAdress), &detourObjectConstructor, reinterpret_cast<void**>(&pObjectConstructor)) != MH_OK) {
+	objectConstructorHook = new FunctionHook<ObjectConstructor>(reinterpret_cast<ObjectConstructor>(mainModuleBase + 0x359DE0), &detourObjectConstructor);
+	if (objectConstructorHook->CreateHook())
 		return 1;
-	}
 
 	// create detour hook for the cModel::AnimatioUpdate(Not actually, only the transposing of the matrix) in Okami
-	cModelAnimationUpdateAddress = (flowerKernelModuleBase + 0x2a86);
-	pcModelAnimationUpdateTarget = reinterpret_cast<cModelAnimationUpdate>(cModelAnimationUpdateAddress);
-	if (MH_CreateHook(reinterpret_cast<void**>(cModelAnimationUpdateAddress), &detourcModelUpdateAnimation, reinterpret_cast<void**>(&pcModelAnimationUpdate)) != MH_OK) {
+	cModelAnimationUpdateHook = new FunctionHook<cModelAnimationUpdate>(reinterpret_cast<cModelAnimationUpdate>(flowerKernelModuleBase + 0x2a86), &detourcModelUpdateAnimation);
+	if (cModelAnimationUpdateHook->CreateHook())
 		return 1;
-	}
 
-	// create detour hook for the cpad::Update function in Okami
-	cpadUpdateAddress = (mainModuleBase + 0x186650);
-	pCpadUpdateTarget = reinterpret_cast<cpadUpdate>(cpadUpdateAddress);
-	if (MH_CreateHook(reinterpret_cast<void**>(cpadUpdateAddress), &detourCpadUpdate, reinterpret_cast<void**>(&pcpadUpdate)) != MH_OK) {
+	// create detour hook for cpad::Update
+	cpadHook = new FunctionHook<cpadUpdate>(reinterpret_cast<cpadUpdate>(mainModuleBase + 0x186650), &detourCpadUpdate);
+	if (cpadHook->CreateHook() || cpadHook->EnableHook())
 		return 1;
-	}
-
-	//enable present function detour
-	if (MH_EnableHook(p_present_target) != MH_OK) {
-		return 1;
-	}
-
-	//enable cpad::Update detour
-	if (MH_EnableHook(pCpadUpdateTarget) != MH_OK) {
-		return 1;
-	}
 }

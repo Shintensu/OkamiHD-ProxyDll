@@ -9,8 +9,6 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
-#include "MinHook.h"
-
 #include "GameStructs.h"
 
 #include "main.h"
@@ -19,6 +17,8 @@
 #include "Initialize.h"
 #include "MinGuiMain.h"
 #include "MainThread.h"
+
+#include "FunctionHook.h"
 
 #include "wk.h"
 #include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
@@ -135,22 +135,15 @@ int ENetThread()
 					{
 						return EXIT_FAILURE;
 					}*/
-					if (MH_DisableHook(reinterpret_cast<void**>(playerGetInputAddress)) != MH_OK)
-					{
+
+					if (playerGetInputHook->DisableHook())
 						return EXIT_FAILURE;
-					}
-					if (MH_DisableHook(reinterpret_cast<void**>(playerConstructorAddress)) != MH_OK)
-					{
+					if (playerConstructorHook->DisableHook())
 						return EXIT_FAILURE;
-					}
-					if (MH_DisableHook(reinterpret_cast<void**>(objectConstructorAdress)) != MH_OK)
-					{
+					if (objectConstructorHook->DisableHook())
 						return EXIT_FAILURE;
-					}
-					if (MH_DisableHook(reinterpret_cast<void**>(cModelAnimationUpdateAddress)) != MH_OK)
-					{
+					if (cModelAnimationUpdateHook->DisableHook())
 						return EXIT_FAILURE;
-					}
 
 					// reload stage while maintaining position
 					*(wk::math::cVec*)(mainModuleBase + 0xB65E64) = *playerObjectPtr[0]->coordinatePointer;
@@ -236,22 +229,14 @@ int ENetThread()
 				//{
 				//	return EXIT_FAILURE;
 				//}
-				if (MH_EnableHook(reinterpret_cast<void**>(playerGetInputAddress)) != MH_OK)
-				{
+				if (playerGetInputHook->EnableHook())
 					return EXIT_FAILURE;
-				}
-				if (MH_EnableHook(reinterpret_cast<void**>(playerConstructorAddress)) != MH_OK)
-				{
+				if (playerConstructorHook->EnableHook())
 					return EXIT_FAILURE;
-				}
-				if (MH_EnableHook(reinterpret_cast<void**>(objectConstructorAdress)) != MH_OK)
-				{
+				if (objectConstructorHook->EnableHook())
 					return EXIT_FAILURE;
-				}
-				if (MH_EnableHook(reinterpret_cast<void**>(cModelAnimationUpdateAddress)) != MH_OK)
-				{
+				if (cModelAnimationUpdateHook->EnableHook())
 					return EXIT_FAILURE;
-				}
 
 				// reload stage while maintaining position
 				*(wk::math::cVec*)(mainModuleBase + 0xB65E64) = *playerObjectPtr[0]->coordinatePointer;
@@ -280,22 +265,14 @@ int ENetThread()
 	//{
 	//	return EXIT_FAILURE;
 	//}
-	if (MH_DisableHook(reinterpret_cast<void**>(playerGetInputAddress)) != MH_OK)
-	{
+	if (playerGetInputHook->DisableHook())
 		return EXIT_FAILURE;
-	}
-	if (MH_DisableHook(reinterpret_cast<void**>(playerConstructorAddress)) != MH_OK)
-	{
+	if (playerConstructorHook->DisableHook())
 		return EXIT_FAILURE;
-	}
-	if (MH_DisableHook(reinterpret_cast<void**>(objectConstructorAdress)) != MH_OK)
-	{
+	if (objectConstructorHook->DisableHook())
 		return EXIT_FAILURE;
-	}
-	if (MH_DisableHook(reinterpret_cast<void**>(cModelAnimationUpdateAddress)) != MH_OK)
-	{
+	if (cModelAnimationUpdateHook->DisableHook())
 		return EXIT_FAILURE;
-	}
 }
 
 int MainThread()

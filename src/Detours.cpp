@@ -4,8 +4,6 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
-#include "MinHook.h"
-
 #include "GameStructs.h"
 
 #include "main.h"
@@ -14,6 +12,8 @@
 #include "Initialize.h"
 #include "MinGuiMain.h"
 #include "MainThread.h"
+
+#include "FunctionHook.h"
 
 #include "wk.h"
 #include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
@@ -111,7 +111,7 @@ void detourPlayerMove(cObjBase* objectPointer)
 {
 	if (*playerObjectPtr == objectPointer)
 	{
-		pPlayerMove(objectPointer);
+		playerMoveHook->m_ppFunctionNew(objectPointer);
 		return;
 	}
 	else
@@ -124,7 +124,7 @@ long long detourPlayerGetInput(cObjBase* objectPointer)
 {
 	if (*playerObjectPtr == objectPointer)
 	{
-		return pPlayerGetInput(objectPointer);
+		return playerGetInputHook->m_ppFunctionNew(objectPointer);
 	}
 	else
 	{
@@ -135,10 +135,10 @@ long long detourPlayerGetInput(cObjBase* objectPointer)
 void detourPlayerConstructor()
 {
 	playerObjectCount = 0;
-	pPlayerConstructor();
+	playerConstructorHook->m_ppFunctionNew();
 	for (int i = 0; i < (int)playerListCount - 1; i++)
 	{
-		pPlayerConstructor();
+		playerConstructorHook->m_ppFunctionNew();
 	}
 	return;
 }
@@ -146,7 +146,7 @@ void detourPlayerConstructor()
 cObjBase* detourObjectConstructor(unsigned long long objectType, unsigned long long objectSize)
 {
 	cObjBase* objectPointer;
-	objectPointer = pObjectConstructor(objectType, objectSize);
+	objectPointer = objectConstructorHook->m_ppFunctionNew(objectType, objectSize);
 	if (objectType == 0x100)
 	{
 		playerPointerList[playerObjectCount] = (pl00*)objectPointer;
@@ -168,7 +168,7 @@ void detourcModelUpdateAnimation(wk::math::cMatrix* thisModel, wk::math::cMatrix
 			}
 		}
 	}
-	pcModelAnimationUpdate(thisModel, transMatrix);
+	cModelAnimationUpdateHook->m_ppFunctionNew(thisModel, transMatrix);
 }
 
 void detourCpadUpdate(uintptr_t* thisCpad)
@@ -177,5 +177,5 @@ void detourCpadUpdate(uintptr_t* thisCpad)
 	{
 		return;
 	}
-	return pcpadUpdate(thisCpad);
+	return cpadHook->m_ppFunctionNew(thisCpad);
 }

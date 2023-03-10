@@ -44,6 +44,7 @@
     <ClInclude Include="src\dllchainload\ini.h" />
     <ClInclude Include="src\dllchainload\iniConfig.h" />
     <ClInclude Include="src\dllchainload\util.h" />
+    <ClInclude Include="src\utilities\FunctionHook.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_win32.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />

@@ -9,7 +9,6 @@ extern WNDPROC oWndProc;
 extern LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 typedef long(__stdcall* present)(IDXGISwapChain*, UINT, UINT);
-extern present p_present;
 extern present p_present_target;
 extern bool get_present_pointer();
 

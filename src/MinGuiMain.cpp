@@ -4,14 +4,14 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
-#include "MinHook.h"
-
 #include "GameStructs.h"
 
 #include "Detours.h"
 #include "Initialize.h"
 #include "MinGuiMain.h"
 #include "MainThread.h"
+
+#include "FunctionHook.h"
 
 #include "wk.h"
 #include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
@@ -183,17 +183,15 @@ void CameraWindow()
 
             if (!cameraUpdates)
             {
-                if (MH_EnableHook(reinterpret_cast<void**>(flowerKernelModuleBase + 0x1A9D0)) != MH_OK)
-                {
-                    cameraUpdates = true;
-                }
+                if (copyVec3Hook->EnableHook())
+                    return;
+                cameraUpdates = true;
             }
             else if (cameraUpdates)
             {
-                if (MH_DisableHook(reinterpret_cast<void**>(flowerKernelModuleBase + 0x1A9D0)) != MH_OK)
-                {
-                    cameraUpdates = false;
-                }
+                if (copyVec3Hook->DisableHook())
+                    return;
+                cameraUpdates = false;
             }
         }
     }

@@ -5,8 +5,6 @@
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
-#include "MinHook.h"
-
 #include "GameStructs.h"
 
 #include "main.h"
@@ -14,6 +12,8 @@
 #include "Initialize.h"
 #include "MinGuiMain.h"
 #include "MainThread.h"
+
+#include "FunctionHook.h"
 
 // Globals
 int errorCode;
@@ -55,17 +55,16 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		isReleased = false;
 	}
 
-	if (isReleased)
-	{
-		return true;
-	}
+	//if (isReleased)
+	//{
+	//	return true;
+	//}
 
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
 // getting a pointer to the games present function
 typedef long(__stdcall* present)(IDXGISwapChain*, UINT, UINT);
-present p_present;
 present p_present_target;
 
 bool get_present_pointer()
@@ -124,7 +123,7 @@ long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_interval, 
 			init = true;
 		}
 		else
-			return p_present(p_swap_chain, sync_interval, flags);
+			return presentHook->m_ppFunctionNew(p_swap_chain, sync_interval, flags);
 	}
 
 	ImGuiMain();
@@ -132,7 +131,7 @@ long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_interval, 
 	p_context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-	return p_present(p_swap_chain, sync_interval, flags);
+	return presentHook->m_ppFunctionNew(p_swap_chain, sync_interval, flags);
 }
 
 DWORD __stdcall EjectThread(LPVOID lpParameter) {
