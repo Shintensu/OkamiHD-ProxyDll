@@ -19,12 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Detours.h" />
+    <ClInclude Include="src\Detours\Detours.h" />
+    <ClInclude Include="src\FunctionHookModules\main.dll\PlayerMovementUpdateHook.h" />
+    <ClInclude Include="src\ImGuiModules\MainModule\DebugModule.h" />
+    <ClInclude Include="src\ImGuiModules\MainModule\ENetModule.h" />
+    <ClInclude Include="src\ImGuiModules\MainModule.h" />
+    <ClInclude Include="src\ImGuiModules\MainModule\PlayerModule.h" />
     <ClInclude Include="src\Initialize.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\MainThread.h" />
     <ClInclude Include="src\GameStructs.h" />
-    <ClInclude Include="src\MinGuiMain.h" />
+    <ClInclude Include="src\ImGuiMain.h" />
     <ClInclude Include="src\okamiDecomp\flower_kernel.dll\include\hx.h" />
     <ClInclude Include="src\okamiDecomp\flower_kernel.dll\include\m2.h" />
     <ClInclude Include="src\okamiDecomp\flower_kernel.dll\include\wk.h" />
@@ -44,7 +49,8 @@
     <ClInclude Include="src\dllchainload\ini.h" />
     <ClInclude Include="src\dllchainload\iniConfig.h" />
     <ClInclude Include="src\dllchainload\util.h" />
-    <ClInclude Include="src\utilities\FunctionHook.h" />
+    <ClInclude Include="src\UpdateVariables.h" />
+    <ClInclude Include="src\FunctionHookModules\BaseFunctionHook.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_dx11.h" />
     <ClInclude Include="vendor\imgui\backends\imgui_impl_win32.h" />
     <ClInclude Include="vendor\imgui\imconfig.h" />
@@ -63,13 +69,21 @@
     <ClInclude Include="vendor\minhook\src\trampoline.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Detours.cpp" />
+    <ClCompile Include="src\Detours\detourcModelUpdateAnimation.cpp" />
+    <ClCompile Include="src\Detours\detourCpadUpdate.cpp" />
+    <ClCompile Include="src\Detours\detourObjectConstructor.cpp" />
+    <ClCompile Include="src\Detours\detourPlayerConstructor.cpp" />
+    <ClCompile Include="src\Detours\detourPlayerGetInput.cpp" />
+    <ClCompile Include="src\Detours\detourCopyVec3.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\ImGuiModules\BaseModule.h" />
+    <ClCompile Include="src\ImGuiModules\MainModule\CameraModule.h" />
     <ClCompile Include="src\Initialize.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainThread.cpp" />
-    <ClCompile Include="src\MinGuiMain.cpp" />
+    <ClCompile Include="src\ImGuiMain.cpp" />
     <ClCompile Include="src\pch\pch.cpp" />
+    <ClCompile Include="src\UpdateVariables.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_dx11.cpp" />
     <ClCompile Include="vendor\imgui\backends\imgui_impl_win32.cpp" />
     <ClCompile Include="vendor\imgui\imgui.cpp" />
@@ -192,7 +206,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>src;src/pch;src/dllchainload;src/utilities;src/OkamiHD-Decomp/main.dll/include;src/OkamiHD-Decomp/flower_kernel.dll/include;vendor;vendor/enet;vendor/enet/include;vendor/imgui;vendor/minhook/include;vendor/minhook/src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src;src/pch;src/dllchainload;src/Detours;src/FunctionHookModules;src/ImGuiModules;src/OkamiHD-Decomp/main.dll/include;src/OkamiHD-Decomp/flower_kernel.dll/include;vendor;vendor/enet;vendor/enet/include;vendor/imgui;vendor/minhook/include;vendor/minhook/src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

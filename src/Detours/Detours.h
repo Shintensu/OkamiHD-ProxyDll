@@ -5,8 +5,6 @@
 
 wk::math::cVec* detourCopyVec3(wk::math::cVec* vector1, wk::math::cVec* vector2);
 
-void detourPlayerMove(cObjBase* objectPointer);
-
 long long detourPlayerGetInput(cObjBase* objectPointer);
 
 void detourPlayerConstructor();

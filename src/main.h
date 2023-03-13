@@ -1,7 +1,12 @@
 #pragma once
 #include <Windows.h>
+#include <d3d11.h>
 
 extern int errorCode;
+
+extern uintptr_t mainModuleBase;
+extern uintptr_t flowerKernelModuleBase;
+
 extern bool isReleased;
 
 extern HINSTANCE dll_handle;

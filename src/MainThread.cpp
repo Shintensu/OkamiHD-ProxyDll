@@ -15,10 +15,12 @@
 
 #include "Detours.h"
 #include "Initialize.h"
-#include "MinGuiMain.h"
+#include "ImGuiMain.h"
 #include "MainThread.h"
 
-#include "FunctionHook.h"
+#include "UpdateVariables.h"
+
+#include "BaseFunctionHook.h"
 
 #include "wk.h"
 #include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
@@ -107,9 +109,9 @@ int ENetThread()
 		{
 			enet_host_service(client, &event, 0);
 		}
-
+		
 		// Disconnect
-		if (!connectENet && isConnected)
+		if (!mainWindow.enetWindow.m_ConnectENet && isConnected)
 		{
 			enet_peer_disconnect(peer, 0);
 			isConnected = false;
@@ -131,11 +133,8 @@ int ENetThread()
 					playerPacketList = nullptr;
 					playerObjectCount = 0;
 
-				/*	if (MH_DisableHook(reinterpret_cast<void**>(playerMoveAddress)) != MH_OK)
-					{
-						return EXIT_FAILURE;
-					}*/
-
+					//if (playerMoveHook->DisableHook())
+					//	return EXIT_FAILURE;
 					if (playerGetInputHook->DisableHook())
 						return EXIT_FAILURE;
 					if (playerConstructorHook->DisableHook())
@@ -205,10 +204,10 @@ int ENetThread()
 		}
 
 		// Connect/Reconnect
-		if (connectENet && !isConnected)
+		if (mainWindow.enetWindow.m_ConnectENet && !isConnected)
 		{
 			/* Set address to localhost. */
-			enet_address_set_host(&address, serverip);
+			enet_address_set_host(&address, mainWindow.enetWindow.m_serverip);
 			address.port = 54310; // 54310
 
 			/* Initiate the connection, allocating the two channels 0 and 1. */
@@ -225,10 +224,9 @@ int ENetThread()
 				puts("Connection to Server succeeded.");
 				isConnected = true;
 
-				//if (MH_EnableHook(reinterpret_cast<void**>(playerMoveAddress)) != MH_OK)
-				//{
+
+				//if (playerMoveHook->EnableHook())
 				//	return EXIT_FAILURE;
-				//}
 				if (playerGetInputHook->EnableHook())
 					return EXIT_FAILURE;
 				if (playerConstructorHook->EnableHook())
@@ -253,7 +251,7 @@ int ENetThread()
 				/* had run out without any significant event.            */
 				enet_peer_reset(peer);
 				puts("Connection to Server failed.");
-				connectENet = !connectENet;
+				mainWindow.enetWindow.m_ConnectENet = !mainWindow.enetWindow.m_ConnectENet;
 			}
 		}
 	}
@@ -261,10 +259,8 @@ int ENetThread()
 	enet_host_destroy(client);
 	enet_deinitialize();
 
-	//if (MH_DisableHook(reinterpret_cast<void**>(playerMoveAddress)) != MH_OK)
-	//{
+	//if (playerMoveHook->DisableHook())
 	//	return EXIT_FAILURE;
-	//}
 	if (playerGetInputHook->DisableHook())
 		return EXIT_FAILURE;
 	if (playerConstructorHook->DisableHook())
@@ -309,9 +305,9 @@ int MainThread()
 					if (strlen(playerPacketList[i].username) > 3)
 					{ 
 						std::string tempName(playerPacketList[i].username);
-						std::string tempName2(username);
+						std::string tempName2(playerPacket.username);
 						
-						if (strcmp(playerPacketList[i].username, username) == 0)
+						if (strcmp(playerPacketList[i].username, playerPacket.username) == 0)
 						{
 							j = false;
 						}

@@ -1,19 +1,32 @@
 #pragma once
+
 #include "MinHook.h"
 
+#include "main.h"
+#include "UpdateVariables.h"
+#include "MainThread.h"
+#include "wk.h"
+#include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
+
 template<typename T>
-class FunctionHook
+class BaseFunctionHook
 {
 public:
 	T      m_pFunction;
 	LPVOID m_pDetourPointer;
-	T     m_ppFunctionNew;
+	T      m_ppFunctionNew;
 
-	FunctionHook(T functionPointer, LPVOID detourPointer)
+	BaseFunctionHook()
+		:m_pFunction(nullptr), m_pDetourPointer(nullptr), m_ppFunctionNew(nullptr)
+	{
+
+	}
+	BaseFunctionHook(T functionPointer, LPVOID detourPointer)
 		:m_pFunction(functionPointer), m_pDetourPointer(detourPointer), m_ppFunctionNew(nullptr)
 	{
 
 	}
+
 	int CreateHook()
 	{
 		if (MH_CreateHook(m_pFunction, m_pDetourPointer, reinterpret_cast<void**>(&m_ppFunctionNew)) != MH_OK)

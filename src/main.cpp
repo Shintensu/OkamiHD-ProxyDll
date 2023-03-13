@@ -10,16 +10,21 @@
 #include "main.h"
 
 #include "Initialize.h"
-#include "MinGuiMain.h"
+#include "ImGuiMain.h"
 #include "MainThread.h"
+#include "UpdateVariables.h"
+#include "Detours.h"
 
-#include "FunctionHook.h"
+#include "BaseFunctionHook.h"
 
 // Globals
-int errorCode;
-bool isReleased;
-
 HINSTANCE dll_handle;
+uintptr_t mainModuleBase;
+uintptr_t flowerKernelModuleBase;
+
+int errorCode;
+
+bool isReleased;
 WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -55,16 +60,10 @@ LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		isReleased = false;
 	}
 
-	//if (isReleased)
-	//{
-	//	return true;
-	//}
-
 	return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
 // getting a pointer to the games present function
-typedef long(__stdcall* present)(IDXGISwapChain*, UINT, UINT);
 present p_present_target;
 
 bool get_present_pointer()
@@ -126,6 +125,7 @@ long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_interval, 
 			return presentHook->m_ppFunctionNew(p_swap_chain, sync_interval, flags);
 	}
 
+	UpdateVariables();
 	ImGuiMain();
 
 	p_context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
@@ -156,9 +156,19 @@ int WINAPI main(HINSTANCE hinstDLL)
 		return 1;
 	}
 
+	// wait until flower_kernel.dll is loaded
+	while (!GetModuleHandle(L"flower_kernel.dll"))
+	{
+		Sleep(50);
+	}
+
+	// get module base addresses
+	mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
+	flowerKernelModuleBase = (uintptr_t)GetModuleHandle(L"flower_kernel.dll");
+
 	// initialize minhhook, detours/overrides and some important values
 	Initialize();
-	// main thread that runs seperately from the game, not to be confused with the injected MinGuiMain function that runs in the actual thread of the game and should thus never contain any hard stops in code execution
+	// main thread that runs seperately from the game, not to be confused with the injected ImGuiMain function that runs in the actual thread of the game and should thus never contain any hard stops in code execution
 	errorCode = MainThread();
 
 	{

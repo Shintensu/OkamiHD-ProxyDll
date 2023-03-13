@@ -1,16 +1,12 @@
 #include "pch.h"
 
-#include "imgui.h"
-#include "backends/imgui_impl_win32.h"
-#include "backends/imgui_impl_dx11.h"
-
-#include "GameStructs.h"
-
 #include "main.h"
+
 #include "Initialize.h"
 #include "Detours.h"
 
-#include "FunctionHook.h"
+#include "BaseFunctionHook.h"
+
 
 #include "wk.h"
 
@@ -22,18 +18,15 @@ bool* useEncryption = nullptr;
 short* encryptionJmpInstruction1 = nullptr;
 short* encryptionJmpInstruction2 = nullptr;
 
-uintptr_t mainModuleBase;
-uintptr_t flowerKernelModuleBase;
+BaseFunctionHook<present>* presentHook;
 
-FunctionHook<present>* presentHook;
-
-FunctionHook<CopyVec3>* copyVec3Hook;
-FunctionHook<PlayerMove>* playerMoveHook;
-FunctionHook<PlayerGetInput>* playerGetInputHook;
-FunctionHook<PlayerConstructor>* playerConstructorHook;
-FunctionHook<ObjectConstructor>* objectConstructorHook;
-FunctionHook<cModelAnimationUpdate>* cModelAnimationUpdateHook;
-FunctionHook<cpadUpdate>* cpadHook;
+BaseFunctionHook<CopyVec3>* copyVec3Hook;
+PlayerMovementUpdateHook* playerMoveHook;
+BaseFunctionHook<PlayerGetInput>* playerGetInputHook;
+BaseFunctionHook<PlayerConstructor>* playerConstructorHook;
+BaseFunctionHook<ObjectConstructor>* objectConstructorHook;
+BaseFunctionHook<cModelAnimationUpdate>* cModelAnimationUpdateHook;
+BaseFunctionHook<cpadUpdate>* cpadHook;
 
 float* fov;
 wk::math::cVec* pitchAndYawDistant;
@@ -50,19 +43,9 @@ int Initialize()
 	}
 
 	// create detour hook for cpad::Update
-	presentHook = new FunctionHook<present>(p_present_target, &detour_present);
+	presentHook = new BaseFunctionHook<present>(p_present_target, &detour_present);
 	if (presentHook->CreateHook() || presentHook->EnableHook())
 		return 1;
-
-	// wait until flower_kernel.dll is loaded
-	while (!GetModuleHandle(L"flower_kernel.dll"))
-	{
-		Sleep(50);
-	}
-
-	// get module base addresses
-	mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
-	flowerKernelModuleBase = (uintptr_t)GetModuleHandle(L"flower_kernel.dll");
 
 	//Expand Player Heap
 	entityHeapExpansionSize = (int*)(mainModuleBase + 0x12CAC5);
@@ -96,37 +79,37 @@ int Initialize()
 	fov = (float*)(mainModuleBase + 0xB663B0);
 
 	// create detour hook for the CopyVec3 function in Okami
-	copyVec3Hook = new FunctionHook<CopyVec3>(reinterpret_cast<CopyVec3>(flowerKernelModuleBase + 0x1A9D0), &detourCopyVec3);
+	copyVec3Hook = new BaseFunctionHook<CopyVec3>(reinterpret_cast<CopyVec3>(flowerKernelModuleBase + 0x1A9D0), &detourCopyVec3);
 	if (copyVec3Hook->CreateHook())
 		return 1;
 
-	// create detour hook for the PlayerMove function in Okami
-	playerMoveHook = new FunctionHook<PlayerMove>(reinterpret_cast<PlayerMove>(mainModuleBase + 0x3AF020), &detourPlayerMove);
+	// create detour hook for the PlayerMovementUpdate function in Okami
+	playerMoveHook = new PlayerMovementUpdateHook();
 	if (playerMoveHook->CreateHook())
 		return 1;
 
 	// create detour hook for the PlayerGetInput function in Okami
-	playerGetInputHook = new FunctionHook<PlayerGetInput>(reinterpret_cast<PlayerGetInput>(mainModuleBase + 0x3ACF90), &detourPlayerGetInput);
+	playerGetInputHook = new BaseFunctionHook<PlayerGetInput>(reinterpret_cast<PlayerGetInput>(mainModuleBase + 0x3ACF90), &detourPlayerGetInput);
 	if (playerGetInputHook->CreateHook())
 		return 1;
 
 	// create detour hook for the PlayerConstructor in Okami
-	playerConstructorHook = new FunctionHook<PlayerConstructor>(reinterpret_cast<PlayerConstructor>(mainModuleBase + 0x3D2EC0), &detourPlayerConstructor);
+	playerConstructorHook = new BaseFunctionHook<PlayerConstructor>(reinterpret_cast<PlayerConstructor>(mainModuleBase + 0x3D2EC0), &detourPlayerConstructor);
 	if (playerConstructorHook->CreateHook())
 		return 1;
 
 	// create detour hook for the ObjectConstructor in Okami
-	objectConstructorHook = new FunctionHook<ObjectConstructor>(reinterpret_cast<ObjectConstructor>(mainModuleBase + 0x359DE0), &detourObjectConstructor);
+	objectConstructorHook = new BaseFunctionHook<ObjectConstructor>(reinterpret_cast<ObjectConstructor>(mainModuleBase + 0x359DE0), &detourObjectConstructor);
 	if (objectConstructorHook->CreateHook())
 		return 1;
 
 	// create detour hook for the cModel::AnimatioUpdate(Not actually, only the transposing of the matrix) in Okami
-	cModelAnimationUpdateHook = new FunctionHook<cModelAnimationUpdate>(reinterpret_cast<cModelAnimationUpdate>(flowerKernelModuleBase + 0x2a86), &detourcModelUpdateAnimation);
+	cModelAnimationUpdateHook = new BaseFunctionHook<cModelAnimationUpdate>(reinterpret_cast<cModelAnimationUpdate>(flowerKernelModuleBase + 0x2a86), &detourcModelUpdateAnimation);
 	if (cModelAnimationUpdateHook->CreateHook())
 		return 1;
 
 	// create detour hook for cpad::Update
-	cpadHook = new FunctionHook<cpadUpdate>(reinterpret_cast<cpadUpdate>(mainModuleBase + 0x186650), &detourCpadUpdate);
+	cpadHook = new BaseFunctionHook<cpadUpdate>(reinterpret_cast<cpadUpdate>(mainModuleBase + 0x186650), &detourCpadUpdate);
 	if (cpadHook->CreateHook() || cpadHook->EnableHook())
 		return 1;
 }
