@@ -29,7 +29,8 @@ WNDPROC oWndProc;
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // WndProc override, calls back to the games og WndProc
-LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
+{
 
 	// pass calls to ImGui
 	if (true && ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
@@ -101,8 +102,10 @@ HWND window = NULL;
 ID3D11Device* p_device = NULL;
 ID3D11DeviceContext* p_context = NULL;
 ID3D11RenderTargetView* mainRenderTargetView = NULL;
-long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags) {
-	if (!init) {
+long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_interval, UINT flags) 
+{
+	if (!init) 
+	{
 		if (SUCCEEDED(p_swap_chain->GetDevice(__uuidof(ID3D11Device), (void**)&p_device)))
 		{
 			p_device->GetImmediateContext(&p_context);
@@ -134,7 +137,8 @@ long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_interval, 
 	return presentHook->m_ppFunctionNew(p_swap_chain, sync_interval, flags);
 }
 
-DWORD __stdcall EjectThread(LPVOID lpParameter) {
+DWORD __stdcall EjectThread(LPVOID lpParameter) 
+{
 	Sleep(100);
 	FreeLibraryAndExitThread(dll_handle, 0);
 	Sleep(100);
@@ -146,28 +150,8 @@ int WINAPI main(HINSTANCE hinstDLL)
 {
 	dll_handle = hinstDLL;
 
-	while (!FindWindowExW(0, 0, 0, L"ŌKAMI HD"))
-	{
-		Sleep(50);
-	}
-
-	if (!get_present_pointer())
-	{
-		return 1;
-	}
-
-	// wait until flower_kernel.dll is loaded
-	while (!GetModuleHandle(L"flower_kernel.dll"))
-	{
-		Sleep(50);
-	}
-
-	// get module base addresses
-	mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
-	flowerKernelModuleBase = (uintptr_t)GetModuleHandle(L"flower_kernel.dll");
-
 	// initialize minhhook, detours/overrides and some important values
-	Initialize();
+	errorCode = Initialize();
 	// main thread that runs seperately from the game, not to be confused with the injected ImGuiMain function that runs in the actual thread of the game and should thus never contain any hard stops in code execution
 	errorCode = MainThread();
 

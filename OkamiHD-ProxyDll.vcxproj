@@ -24,6 +24,7 @@
     <ClInclude Include="src\ImGuiModules\MainModule\DebugModule.h" />
     <ClInclude Include="src\ImGuiModules\MainModule\ENetModule.h" />
     <ClInclude Include="src\ImGuiModules\MainModule.h" />
+    <ClInclude Include="src\ImGuiModules\MainModule\InventoryModule.h" />
     <ClInclude Include="src\ImGuiModules\MainModule\PlayerModule.h" />
     <ClInclude Include="src\Initialize.h" />
     <ClInclude Include="src\main.h" />

@@ -4,6 +4,7 @@
 #include "MainModule/PlayerModule.h"
 #include "MainModule/ENetModule.h"
 #include "MainModule/DebugModule.h"
+#include "MainModule/InventoryModule.h"
 
 class MainModule : public BaseModule
 {
@@ -16,6 +17,7 @@ public:
     PlayerModule playerWindow;
     ENetModule enetWindow;
     DebugModule debugWindow;
+    InventoryModule inventoryWindow;
 public:
     MainModule()
     {
@@ -82,6 +84,11 @@ public:
         // Debug Window
         debugWindow.Show();
         debugWindow.Main();
+
+        inventoryWindow.Show();
+        inventoryWindow.Main();
+
+        ImGui::Checkbox("Use Encryption?", (bool*)(mainModuleBase + 0x7E6B44));
 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 

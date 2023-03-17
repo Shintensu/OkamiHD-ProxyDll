@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 
 #include "main.h"
 
@@ -36,16 +36,14 @@ wk::math::cVec* pitchAndYaw;
 // somewhat self explanatory in what it does, if you have any questions about MinHook, there is plenty of explanations on youtube
 int Initialize()
 {
-	// initialize minhook
-	if (MH_Initialize())
+	while (!(uintptr_t)GetModuleHandle(L"main.dll"))
 	{
-		return 1;
+
 	}
 
-	// create detour hook for cpad::Update
-	presentHook = new BaseFunctionHook<present>(p_present_target, &detour_present);
-	if (presentHook->CreateHook() || presentHook->EnableHook())
-		return 1;
+	// get module base addresses
+	mainModuleBase = (uintptr_t)GetModuleHandle(L"main.dll");
+	flowerKernelModuleBase = (uintptr_t)GetModuleHandle(L"flower_kernel.dll");
 
 	//Expand Player Heap
 	entityHeapExpansionSize = (int*)(mainModuleBase + 0x12CAC5);
@@ -55,8 +53,10 @@ int Initialize()
 	VirtualProtect(entityHeapExpansionSize, 4, oldprotect, &oldprotect);
 
 	//Set encryption mode
-	useEncryption = (bool*)(mainModuleBase + 0x7E6B44);
+	useEncryption = (bool*)(mainModuleBase + 0x15269D);
+	VirtualProtect(useEncryption, 4, PAGE_EXECUTE_READWRITE, &oldprotect);
 	*useEncryption = 0; // Default is 1
+	VirtualProtect(useEncryption, 4, oldprotect, &oldprotect);
 
 	if (!*useEncryption)
 	{
@@ -67,7 +67,7 @@ int Initialize()
 		VirtualProtect(encryptionJmpInstruction1, 2, oldprotect, &oldprotect);
 
 		encryptionJmpInstruction2 = (short*)(mainModuleBase + 0x4B5FA4);
-		
+
 		VirtualProtect(encryptionJmpInstruction2, 2, PAGE_EXECUTE_READWRITE, &oldprotect);
 		*encryptionJmpInstruction2 = 0x9090; // Default is  0x0C7F
 		VirtualProtect(encryptionJmpInstruction2, 2, oldprotect, &oldprotect);
@@ -77,6 +77,27 @@ int Initialize()
 	pitchAndYawDistant = (wk::math::cVec*)(mainModuleBase + 0xB66390);
 	pitchAndYaw = (wk::math::cVec*)(mainModuleBase + 0xB6659C);
 	fov = (float*)(mainModuleBase + 0xB663B0);
+
+	while (!FindWindowExW(0, 0, 0, L"ŌKAMI HD"))
+	{
+		Sleep(50);
+	}
+
+	if (!get_present_pointer())
+	{
+		return 1;
+	}
+
+	// initialize minhook
+	if (MH_Initialize())
+	{
+		return 1;
+	}
+
+	// create detour hook for present
+	presentHook = new BaseFunctionHook<present>(p_present_target, &detour_present);
+	if (presentHook->CreateHook() || presentHook->EnableHook())
+		return 1;
 
 	// create detour hook for the CopyVec3 function in Okami
 	copyVec3Hook = new BaseFunctionHook<CopyVec3>(reinterpret_cast<CopyVec3>(flowerKernelModuleBase + 0x1A9D0), &detourCopyVec3);

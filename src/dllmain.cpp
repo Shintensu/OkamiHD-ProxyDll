@@ -33,7 +33,7 @@ BOOL WINAPI DllMain(
             DirectInput8Create_fn = (DirectInput8Create_TYPE)GetProcAddress(din8DLL, "DirectInput8Create");
         }
 
-        // create threada
+        // create thread
         CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)main, &hinstDLL, 0, NULL);
 
         break;
