@@ -66,7 +66,42 @@ public:
 				ImGui::InputScalar("Karmic 6 - Canine Warrior Tei:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB207C4));
 				ImGui::InputScalar("Karmic 5 - Canine Warrior Rei:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB207C6));
 				ImGui::InputScalar("Karmic 4 - Canine Warrior Shin:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB207CE));
+			}
 
+			if (ImGui::CollapsingHeader("Equipment"))
+			{
+				if (ImGui::CollapsingHeader("Divine Instruments"))
+				{
+					ImGui::InputScalar("Divine Retribution:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20650));
+					ImGui::InputScalar("Snarling Beast:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20652));
+					ImGui::InputScalar("Infinity Judge:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20654));
+					ImGui::InputScalar("Trinity Mirror:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20656));
+					ImGui::InputScalar("Solar Flare:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20658));
+
+					ImGui::InputScalar("Devout Beads:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB2065A));
+					ImGui::InputScalar("Life Beads:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB2065C));
+					ImGui::InputScalar("Exorcism Beads:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB2065E));
+					ImGui::InputScalar("Ressurection Beads:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20660));
+					ImGui::InputScalar("Tundra Beads:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20662));
+
+					ImGui::InputScalar("Tsumugari:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20664));
+					ImGui::InputScalar("Seven Strike:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20666));
+					ImGui::InputScalar("Blade of Kusanagi:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20668));
+					ImGui::InputScalar("Eighth Wonder:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB2066A));
+					ImGui::InputScalar("Thunder Edge:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB2066C));
+				}
+				if (ImGui::CollapsingHeader("Holy Artifacts"))
+				{
+					ImGui::InputScalar("Astral Pouch:", ImGuiDataType_::ImGuiDataType_S8, (byte*)(mainModuleBase + 0xB2063C));
+					ImGui::InputScalar("Peace Bell:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20646));
+					ImGui::InputScalar("Golden Lucky Cat:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB2075A));
+					ImGui::InputScalar("Thief's Glove:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB2075C));
+					ImGui::InputScalar("Wood Mat:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB2075E));
+					ImGui::InputScalar("Golden Ink Pot:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20760));
+					ImGui::InputScalar("Water Tablet:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB20768));
+					ImGui::InputScalar("Fire Tablet:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB2076A));
+					ImGui::InputScalar("String of Beads:", ImGuiDataType_::ImGuiDataType_S16, (short*)(mainModuleBase + 0xB207CA));
+				}			
 			}
 		}
 	}
