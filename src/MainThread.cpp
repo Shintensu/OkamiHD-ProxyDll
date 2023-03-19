@@ -158,7 +158,7 @@ int ENetThread()
 			// SendText(peer, "Hello World!");
 
 			/* Wait up to 10 milliseconds for an event. */
-			while (enet_host_service(client, &event, 1) > 0)
+			while (enet_host_service(client, &event, 10) > 0)
 			{
 				std::cout << "Event occuring" << std::endl;
 				switch (event.type)
