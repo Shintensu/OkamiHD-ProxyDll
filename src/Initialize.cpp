@@ -55,10 +55,10 @@ int Initialize()
 	//Set encryption mode
 	useEncryption = (bool*)(mainModuleBase + 0x15269D);
 	VirtualProtect(useEncryption, 4, PAGE_EXECUTE_READWRITE, &oldprotect);
-	*useEncryption = 0; // Default is 1
+	*useEncryption = 1; // Default is 1
 	VirtualProtect(useEncryption, 4, oldprotect, &oldprotect);
 
-	if (!*useEncryption)
+	//disable encryption related jumps, otherwise crashes if useEncryption is 0
 	{
 		encryptionJmpInstruction1 = (short*)(mainModuleBase + 0x4B5C6D);
 

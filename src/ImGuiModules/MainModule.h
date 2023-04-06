@@ -30,6 +30,8 @@ public:
             return;
 
         ImGui::Begin("OkamiHD ImGui Overlay - Main Menu");
+        //ImGui::SetWindowPos(ImVec2(1.0f, 1.0f));
+        
 
         if (ImGui::BeginMainMenuBar())
         {
@@ -77,6 +79,10 @@ public:
         playerWindow.Show();
         playerWindow.Main();
 
+        //Inventory
+        inventoryWindow.Show();
+        inventoryWindow.Main();
+
         // ENet Client
         enetWindow.Show();
         enetWindow.Main();
@@ -84,9 +90,6 @@ public:
         // Debug Window
         debugWindow.Show();
         debugWindow.Main();
-
-        inventoryWindow.Show();
-        inventoryWindow.Main();
 
         ImGui::Checkbox("Use Encryption?", (bool*)(mainModuleBase + 0x7E6B44));
 
