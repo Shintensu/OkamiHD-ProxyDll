@@ -2,9 +2,6 @@
 
 #include <cstdint>
 
-#include "wk.h"
-#include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
-
 namespace gameObj
 {
 	struct PlayerPacket

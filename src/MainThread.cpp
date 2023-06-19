@@ -1,13 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include "pch.h"
 
-#include <iostream>
-#include <algorithm>
 #include <enet/enet.h>
-
-#include "imgui.h"
-#include "backends/imgui_impl_win32.h"
-#include "backends/imgui_impl_dx11.h"
 
 #include "GameStructs.h"
 
@@ -22,8 +16,8 @@
 
 #include "BaseFunctionHook.h"
 
-#include "wk.h"
-#include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
+#include "flower_kernel/flower_kernel.h"
+#include "main/main.h"
 
 const int SLEEPTIME = 50;
 
@@ -146,7 +140,7 @@ int ENetThread()
 
 					// reload stage while maintaining position
 					*(wk::math::cVec*)(mainModuleBase + 0xB65E64) = *playerObjectPtr[0]->coordinatePointer;
-					*(float*)(mainModuleBase + 0xB65E70) = playerObjectPtr[0]->rotation.identity.y;
+					*(float*)(mainModuleBase + 0xB65E70) = playerObjectPtr[0]->rotation.vector.y;
 
 					*(uintptr_t*)(mainModuleBase + 0xB6B2AF) = 2;
 				}
@@ -238,7 +232,7 @@ int ENetThread()
 
 				// reload stage while maintaining position
 				*(wk::math::cVec*)(mainModuleBase + 0xB65E64) = *playerObjectPtr[0]->coordinatePointer;
-				*(float*)(mainModuleBase + 0xB65E70) = playerObjectPtr[0]->rotation.identity.y;
+				*(float*)(mainModuleBase + 0xB65E70) = playerObjectPtr[0]->rotation.vector.y;
 
 				*(uintptr_t*)(mainModuleBase + 0xB6B2AF) = 2;
 
@@ -320,7 +314,7 @@ int MainThread()
 						}
 
 						*playerPointerList[i]->coordinatePointer = *playerList[i + j]->coordinatePointer;
-						playerPointerList[i]->coordinatePointer->identity.x = playerList[i + j]->coordinatePointer->identity.x + 50.0f;
+						playerPointerList[i]->coordinatePointer->vector.x = playerList[i + j]->coordinatePointer->vector.x + 50.0f;
 						playerPointerList[i]->rotation = playerList[i + j]->rotation;
 						playerPointerList[i]->movementStage = playerList[i + j]->movementStage;
 						//playerPointerList[i]->mtb3CamPointer = playerList[i + j]->mtb3CamPointer;

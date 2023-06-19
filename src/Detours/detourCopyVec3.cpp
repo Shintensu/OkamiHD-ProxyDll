@@ -11,8 +11,8 @@
 
 #include "BaseFunctionHook.h"
 
-#include "wk.h"
-#include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
+#include "flower_kernel/flower_kernel.h"
+#include "main/main.h"
 
 int* cameraType;
 
@@ -49,56 +49,56 @@ wk::math::cVec* detourCopyVec3(wk::math::cVec* vector1, wk::math::cVec* vector2)
 				/*cameraType = (int*)(mainModuleBase + 0xB664BC);
 				*cameraType = 1;*/
 
-				pCoordinateDelta->identity.x = cosf(pitchAndYawDistant->identity.y * -1) * tempSpeed;
-				pCoordinateDelta->identity.y = sinf(pitchAndYawDistant->identity.x * -1) * tempSpeed;
-				pCoordinateDelta->identity.z = sinf(pitchAndYawDistant->identity.y * -1) * tempSpeed;
+				pCoordinateDelta->vector.x = cosf(pitchAndYawDistant->vector.y * -1) * tempSpeed;
+				pCoordinateDelta->vector.y = sinf(pitchAndYawDistant->vector.x * -1) * tempSpeed;
+				pCoordinateDelta->vector.z = sinf(pitchAndYawDistant->vector.y * -1) * tempSpeed;
 
-				pCoordinateDeltaHalf->identity.x = sinf(pitchAndYawDistant->identity.y * 1) * tempSpeed;
-				pCoordinateDeltaHalf->identity.y = sinf(pitchAndYawDistant->identity.x * 1) * tempSpeed;
-				pCoordinateDeltaHalf->identity.z = cosf(pitchAndYawDistant->identity.y * 1) * tempSpeed;
+				pCoordinateDeltaHalf->vector.x = sinf(pitchAndYawDistant->vector.y * 1) * tempSpeed;
+				pCoordinateDeltaHalf->vector.y = sinf(pitchAndYawDistant->vector.x * 1) * tempSpeed;
+				pCoordinateDeltaHalf->vector.z = cosf(pitchAndYawDistant->vector.y * 1) * tempSpeed;
 
 				if (GetAsyncKeyState(0x57))
 				{
-					vector1->identity.x += pCoordinateDelta->identity.x;
-					vector1->identity.y += pCoordinateDelta->identity.y;
-					vector1->identity.z += pCoordinateDelta->identity.z;
+					vector1->vector.x += pCoordinateDelta->vector.x;
+					vector1->vector.y += pCoordinateDelta->vector.y;
+					vector1->vector.z += pCoordinateDelta->vector.z;
 				}
 				if (GetAsyncKeyState(0x53))
 				{
-					vector1->identity.x -= pCoordinateDelta->identity.x;
-					vector1->identity.y -= pCoordinateDelta->identity.y;
-					vector1->identity.z -= pCoordinateDelta->identity.z;
+					vector1->vector.x -= pCoordinateDelta->vector.x;
+					vector1->vector.y -= pCoordinateDelta->vector.y;
+					vector1->vector.z -= pCoordinateDelta->vector.z;
 				}
 				if (GetAsyncKeyState(0x41))
 				{
-					vector1->identity.x -= pCoordinateDeltaHalf->identity.x;
-					vector1->identity.z -= pCoordinateDeltaHalf->identity.z;
+					vector1->vector.x -= pCoordinateDeltaHalf->vector.x;
+					vector1->vector.z -= pCoordinateDeltaHalf->vector.z;
 				}
 				if (GetAsyncKeyState(0x44))
 				{
-					vector1->identity.x += pCoordinateDeltaHalf->identity.x;
-					vector1->identity.z += pCoordinateDeltaHalf->identity.z;
+					vector1->vector.x += pCoordinateDeltaHalf->vector.x;
+					vector1->vector.z += pCoordinateDeltaHalf->vector.z;
 				}
 
 				cameraPostion = (wk::math::cVec*)(mainModuleBase + 0xB66380);
 				cameraFocus = (wk::math::cVec*)(mainModuleBase + 0xB66370);
 
-				pCoordinateDelta->identity.x = cosf(pitchAndYawDistant->identity.y * -1) * tempFDistance;
-				pCoordinateDelta->identity.y = sinf(pitchAndYawDistant->identity.x * -1) * tempFDistance;
-				pCoordinateDelta->identity.z = sinf(pitchAndYawDistant->identity.y * -1) * tempFDistance;
+				pCoordinateDelta->vector.x = cosf(pitchAndYawDistant->vector.y * -1) * tempFDistance;
+				pCoordinateDelta->vector.y = sinf(pitchAndYawDistant->vector.x * -1) * tempFDistance;
+				pCoordinateDelta->vector.z = sinf(pitchAndYawDistant->vector.y * -1) * tempFDistance;
 
-				cameraFocus->identity.x = cameraPostion->identity.x + pCoordinateDelta->identity.x;
-				cameraFocus->identity.y = cameraPostion->identity.y + pCoordinateDelta->identity.y;
-				cameraFocus->identity.z = cameraPostion->identity.z + pCoordinateDelta->identity.z;
+				cameraFocus->vector.x = cameraPostion->vector.x + pCoordinateDelta->vector.x;
+				cameraFocus->vector.y = cameraPostion->vector.y + pCoordinateDelta->vector.y;
+				cameraFocus->vector.z = cameraPostion->vector.z + pCoordinateDelta->vector.z;
 
 				return vector1;
 			}
 		}
 
 		// original code
-		vector1->identity.x = vector2->identity.x;
-		vector1->identity.y = vector2->identity.y;
-		vector1->identity.z = vector2->identity.z;
+		vector1->vector.x = vector2->vector.x;
+		vector1->vector.y = vector2->vector.y;
+		vector1->vector.z = vector2->vector.z;
 	}
 	return vector1;
 }

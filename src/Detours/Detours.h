@@ -1,7 +1,7 @@
 #pragma once
 
-#include "wk.h"
-#include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
+#include "flower_kernel/flower_kernel.h"
+#include "main/main.h"
 
 wk::math::cVec* detourCopyVec3(wk::math::cVec* vector1, wk::math::cVec* vector2);
 

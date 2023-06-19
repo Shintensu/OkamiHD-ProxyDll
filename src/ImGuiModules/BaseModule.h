@@ -7,22 +7,24 @@
 #include "Initialize.h"
 #include "UpdateVariables.h"
 #include "MainThread.h"
-#include "wk.h"
 
-class BaseModule
+namespace ImGuiModules
 {
-public:
-	bool m_IsShown = false;
-
-public:
-	virtual void Main() = 0;
-
-	void Show()
+	class BaseModule
 	{
-		m_IsShown = true;
-	}
-	void Hide()
-	{
-		m_IsShown = false;
-	}
-};
+	public:
+		bool m_IsShown = false;
+
+	public:
+		virtual void Main() = 0;
+
+		void Show()
+		{
+			m_IsShown = true;
+		}
+		void Hide()
+		{
+			m_IsShown = false;
+		}
+	};
+}

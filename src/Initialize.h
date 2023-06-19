@@ -4,8 +4,9 @@
 #include "main.dll/PlayerMovementUpdateHook.h"
 
 #include "main.h"
-#include "wk.h"
-#include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
+
+#include "flower_kernel/flower_kernel.h"
+#include "main/main.h"
 
 int Initialize();
 

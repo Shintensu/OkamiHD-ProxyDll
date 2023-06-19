@@ -1,6 +1,6 @@
 #pragma once
-#include <Windows.h>
-#include <d3d11.h>
+
+#include "pch.h"
 
 extern int errorCode;
 

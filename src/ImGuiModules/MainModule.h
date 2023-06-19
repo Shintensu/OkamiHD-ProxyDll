@@ -1,23 +1,24 @@
 #pragma once
 
-#include "MainModule/CameraModule.h"
-#include "MainModule/PlayerModule.h"
-#include "MainModule/ENetModule.h"
-#include "MainModule/DebugModule.h"
-#include "MainModule/InventoryModule.h"
+#include "MainModule/Camera.h"
+#include "MainModule/Player.h"
+#include "MainModule/ENet.h"
+#include "MainModule/Inventory.h"
 
-class MainModule : public BaseModule
+#include "MainModule/Console.h"
+#include "MainModule/HeapViewer.h"
+
+class MainModule : public ImGuiModules::BaseModule
 {
 private:
-    bool m_Show_camera_window = false;
-    bool m_Show_hack_window = false;
-    bool m_Show_debug = false;
+    bool m_Show_demo = false;
 public:
-    CameraModule cameraWindow;
-    PlayerModule playerWindow;
-    ENetModule enetWindow;
-    DebugModule debugWindow;
-    InventoryModule inventoryWindow;
+    ImGuiModules::Camera cameraWindow;
+    ImGuiModules::Player playerWindow;
+    ImGuiModules::ENet enetWindow;
+    ImGuiModules::Inventory inventoryWindow;
+    ImGuiModules::Console consoleWindow;
+    ImGuiModules::HeapViewer heapViewerWindow;
 public:
     MainModule()
     {
@@ -29,10 +30,9 @@ public:
         if (!m_IsShown)
             return;
 
-        ImGui::Begin("OkamiHD ImGui Overlay - Main Menu");
+        ImGui::Begin("OkamiHD ImGui Overlay - Main Menu", &m_IsShown);
         //ImGui::SetWindowPos(ImVec2(1.0f, 1.0f));
         
-
         if (ImGui::BeginMainMenuBar())
         {
             if (ImGui::BeginMenu("Menu"))
@@ -42,9 +42,13 @@ public:
             }
             if (ImGui::BeginMenu("Windows"))
             {
-                ImGui::MenuItem("Camera Hacks", NULL, &m_Show_camera_window);
-                ImGui::MenuItem("Player Hacks", NULL, &m_Show_hack_window);
-                ImGui::MenuItem("Default ImGui Debug Windows", NULL, &m_Show_debug);
+                ImGui::MenuItem("Camera", NULL, &cameraWindow.m_IsShown);
+                ImGui::MenuItem("Player", NULL, &playerWindow.m_IsShown);
+                ImGui::MenuItem("ENet Client", NULL, &enetWindow.m_IsShown);
+                ImGui::MenuItem("Inventory", NULL, &inventoryWindow.m_IsShown);
+                ImGui::MenuItem("Default ImGui Demo Window", NULL, &m_Show_demo);
+                ImGui::MenuItem("Console", NULL, &consoleWindow.m_IsShown);
+                ImGui::MenuItem("Heap Viewer", NULL, &heapViewerWindow.m_IsShown);
                 ImGui::EndMenu();
             }
             //if (ImGui::MenuItem("MenuItem")) {} // You can also use MenuItem() inside a menu bar!
@@ -71,30 +75,32 @@ public:
             ImGui::ShowUserGuide();
         }
 
-        // Camera Window
-        cameraWindow.Show();
-        cameraWindow.Main();
-
-        // Hack Window
-        playerWindow.Show();
-        playerWindow.Main();
-
-        //Inventory
-        inventoryWindow.Show();
-        inventoryWindow.Main();
-
-        // ENet Client
-        enetWindow.Show();
-        enetWindow.Main();
-
-        // Debug Window
-        debugWindow.Show();
-        debugWindow.Main();
-
         ImGui::Checkbox("Use Encryption?", (bool*)(mainModuleBase + 0x7E6B44));
 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
         ImGui::End();
+
+        if (cameraWindow.m_IsShown)
+            cameraWindow.Main();
+
+        if (playerWindow.m_IsShown)
+            playerWindow.Main();
+
+        if (inventoryWindow.m_IsShown)
+            inventoryWindow.Main();
+
+        if (enetWindow.m_IsShown)
+            enetWindow.Main();
+
+        if (consoleWindow.m_IsShown)
+            consoleWindow.Main();
+
+        if (heapViewerWindow.m_IsShown)
+            heapViewerWindow.Main();
+
+        // ImGui Demo Window
+        if (m_Show_demo)
+            ImGui::ShowDemoWindow(&m_Show_demo);
     }
 };

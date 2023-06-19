@@ -21,11 +21,12 @@
   <ItemGroup>
     <ClInclude Include="src\Detours\Detours.h" />
     <ClInclude Include="src\FunctionHookModules\main.dll\PlayerMovementUpdateHook.h" />
-    <ClInclude Include="src\ImGuiModules\MainModule\DebugModule.h" />
-    <ClInclude Include="src\ImGuiModules\MainModule\ENetModule.h" />
+    <ClInclude Include="src\ImGuiModules\MainModule\Console.h" />
+    <ClInclude Include="src\ImGuiModules\MainModule\HeapViewer.h" />
+    <ClInclude Include="src\ImGuiModules\MainModule\ENet.h" />
     <ClInclude Include="src\ImGuiModules\MainModule.h" />
-    <ClInclude Include="src\ImGuiModules\MainModule\InventoryModule.h" />
-    <ClInclude Include="src\ImGuiModules\MainModule\PlayerModule.h" />
+    <ClInclude Include="src\ImGuiModules\MainModule\Inventory.h" />
+    <ClInclude Include="src\ImGuiModules\MainModule\Player.h" />
     <ClInclude Include="src\Initialize.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\MainThread.h" />
@@ -43,6 +44,8 @@
     <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cModel\cObj\cObjBase\pl\plwp.h" />
     <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cModel\cObj\cObjBase\pl\plwpsub.h" />
     <ClInclude Include="src\okamiDecomp\main.dll\include\cParts\cParts.h" />
+    <ClInclude Include="src\OkamiHD-Decomp\flower_kernel\flower_kernel.h" />
+    <ClInclude Include="src\OkamiHD-Decomp\main\main.h" />
     <ClInclude Include="src\pch\pch.h" />
     <ClInclude Include="src\dllchainload\chainLoad.h" />
     <ClInclude Include="src\dllchainload\dinput8Proxy.h" />
@@ -78,7 +81,7 @@
     <ClCompile Include="src\Detours\detourCopyVec3.cpp" />
     <ClCompile Include="src\dllmain.cpp" />
     <ClCompile Include="src\ImGuiModules\BaseModule.h" />
-    <ClCompile Include="src\ImGuiModules\MainModule\CameraModule.h" />
+    <ClCompile Include="src\ImGuiModules\MainModule\Camera.h" />
     <ClCompile Include="src\Initialize.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\MainThread.cpp" />
@@ -103,6 +106,8 @@
     <None Include="src\dllchainload\dinput8.def" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="flower_kernel.lib" />
+    <Library Include="main.lib" />
     <Library Include="vendor\enet\out\build\x64-Debug\enet.lib" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -206,13 +211,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>src;src/pch;src/dllchainload;src/Detours;src/FunctionHookModules;src/ImGuiModules;src/OkamiHD-Decomp/main.dll/include;src/OkamiHD-Decomp/flower_kernel.dll/include;vendor;vendor/enet;vendor/enet/include;vendor/imgui;vendor/minhook/include;vendor/minhook/src</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
+      <AdditionalIncludeDirectories>src;src/pch;src/dllchainload;src/Detours;src/FunctionHookModules;src/ImGuiModules;src/OkamiHD-Decomp;vendor;vendor/enet;vendor/enet/include;vendor/imgui;vendor/minhook/include;vendor/minhook/src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;winmm.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>flower_kernel.lib;main.lib;ws2_32.lib;winmm.lib;d3d11.lib;d3dcompiler.lib;dxgi.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>src/dllchainload/dinput8.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>

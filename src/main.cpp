@@ -1,9 +1,4 @@
-﻿#define WIN32_LEAN_AND_MEAN
-#include "pch.h"
-
-#include "imgui.h"
-#include "backends/imgui_impl_win32.h"
-#include "backends/imgui_impl_dx11.h"
+﻿#include "pch.h"
 
 #include "GameStructs.h"
 
@@ -119,7 +114,12 @@ long __stdcall detour_present(IDXGISwapChain* p_swap_chain, UINT sync_interval, 
 			oWndProc = (WNDPROC)SetWindowLongPtr(window, GWLP_WNDPROC, (LONG_PTR)WndProc);
 			ImGui::CreateContext();
 			ImGuiIO& io = ImGui::GetIO();
-			io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
+
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+			io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 			ImGui_ImplWin32_Init(window);
 			ImGui_ImplDX11_Init(p_device, p_context);
 			init = true;

@@ -15,9 +15,6 @@
 
 #include "BaseFunctionHook.h"
 
-#include "wk.h"
-#include "cParts/cModel/cObj/cObjBase/pl/pl00.h"
-
 #include "MainModule.h"
 
 MainModule mainWindow;
@@ -33,24 +30,6 @@ void ImGuiMain()
     // Main Menu
     mainWindow.Show();
     mainWindow.Main();
-
-    // Default Windows
-    if (mainWindow.debugWindow.m_Show_demo)
-        ImGui::ShowDemoWindow(&mainWindow.debugWindow.m_Show_demo);
-    if (mainWindow.debugWindow.m_Show_metrics)
-        ImGui::ShowMetricsWindow();
-    if (mainWindow.debugWindow.m_Show_about)
-        ImGui::ShowAboutWindow();
-    if (mainWindow.debugWindow.m_Show_debug)
-        ImGui::ShowDebugLogWindow();
-    if (mainWindow.debugWindow.m_Show_style_editor)
-        ImGui::ShowStyleEditor();
-    if (mainWindow.debugWindow.m_Show_style_selector)
-        ImGui::ShowStyleSelector("Style Selector");
-    if (mainWindow.debugWindow.m_Show_font_selector)
-        ImGui::ShowFontSelector("Font Selector");
-    if (mainWindow.debugWindow.m_Show_user_guide)
-        ImGui::ShowUserGuide();
 
     // Rendering
     ImGui::Render();

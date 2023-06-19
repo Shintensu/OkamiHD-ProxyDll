@@ -7,8 +7,8 @@
 
 #include "BaseFunctionHook.h"
 
-
-#include "wk.h"
+#include "flower_kernel/flower_kernel.h"
+#include "main/main.h"
 
 int* entityHeapExpansionSize = nullptr;
 
