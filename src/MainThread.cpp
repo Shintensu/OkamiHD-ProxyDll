@@ -284,6 +284,7 @@ int MainThread()
 	
 	while (true)
 	{
+		// I really should have documented what this address was, whoops. All I remember is that I did this to reset the 'PlayerObjectCount' after a load
 		if (*(bool*)(mainModuleBase + 0xB6B2AF) == 0x1)
 		{
 			playerObjectCount = 0;
@@ -319,13 +320,22 @@ int MainThread()
 						playerPointerList[i]->movementStage = playerList[i + j]->movementStage;
 						//playerPointerList[i]->mtb3CamPointer = playerList[i + j]->mtb3CamPointer;
 
-						for (int k = 0; k < 48; k++)
+						// Suddenly causes crashes, might be due to the = operator change
+						/*for (int k = 0; k < 48; k++)
 						{
 							playerPointerList[i]->matrixArray[k] = playerList[i + j]->matrixArray[k];
-						}
+						}*/
 					}
 				}
 			}
 		}
 	}
+}
+
+void modelCreation()
+{
+	std::vector<cModel> otherPlayers;
+
+	// TO DO: Create easy to modify attribute system: Damage, health etc in a config file
+	// TO DO: Find out what parameters are used to create specific models and how to arbitrarily spawn them
 }
