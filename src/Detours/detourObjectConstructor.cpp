@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#include "GameStructs.h"
-
 #include "main.h"
 
 #include "Detours.h"

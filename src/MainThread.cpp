@@ -3,7 +3,7 @@
 
 #include <enet/enet.h>
 
-#include "GameStructs.h"
+#include "NetworkPackets.h"
 
 #include "main.h"
 
@@ -27,9 +27,8 @@ bool isConnected = false;
 
 unsigned int playerObjectCount = 0;
 
-gameObj::PlayerPacket* playerPacketList = nullptr;
+NetworkPackets::PlayerUpdatePacket* playerUpdatePacketList = nullptr;
 size_t playerListCount = 0;
-pl00** playerList = nullptr;
 pl00** playerPointerList = nullptr;
 
 // Declaring some loop relevant variables
@@ -37,11 +36,11 @@ ENetAddress address;
 ENetEvent event;
 ENetPeer* peer = nullptr;
 
-void SendPlayerUpdate(ENetPeer* peer, const gameObj::PlayerPacket* data)
+void SendPlayerUpdate(ENetPeer* peer, const NetworkPackets::PlayerUpdatePacket* data)
 {
 	/* Create a reliable packet of size 7 containing "packet\0" */
 	ENetPacket* packet = enet_packet_create(data,
-		sizeof(gameObj::PlayerPacket),
+		sizeof(NetworkPackets::PlayerUpdatePacket),
 		ENET_PACKET_FLAG_RELIABLE);
 	/* Send the packet to the peer over channel id 0. */
 	/* One could also broadcast the packet by         */
@@ -119,12 +118,10 @@ int ENetThread()
 				case ENET_EVENT_TYPE_DISCONNECT:
 					puts("Disconnection succeeded.");
 
-					free(playerList);
-					playerList = nullptr;
 					free(playerPointerList);
 					playerPointerList = nullptr;
-					free(playerPacketList);
-					playerPacketList = nullptr;
+					free(playerUpdatePacketList);
+					playerUpdatePacketList = nullptr;
 					playerObjectCount = 0;
 
 					//if (playerMoveHook->DisableHook())
@@ -135,8 +132,8 @@ int ENetThread()
 						return EXIT_FAILURE;
 					if (objectConstructorHook->DisableHook())
 						return EXIT_FAILURE;
-					if (cModelAnimationUpdateHook->DisableHook())
-						return EXIT_FAILURE;
+					//if (cModelAnimationUpdateHook->DisableHook())
+					//	return EXIT_FAILURE;
 
 					// reload stage while maintaining position
 					*(wk::math::cVec*)(mainModuleBase + 0xB65E64) = *playerObjectPtr[0]->coordinatePointer;
@@ -160,25 +157,18 @@ int ENetThread()
 				case ENET_EVENT_TYPE_RECEIVE:
 					if (event.channelID == 2)
 					{
-						SendPlayerUpdate(peer, &playerPacket);
+						SendPlayerUpdate(peer, &localPlayerUpdatePacket);
 
-						if (!playerList)
+						if (!playerPointerList)
 						{
-							playerListCount = (event.packet->dataLength / sizeof(gameObj::PlayerPacket));
-							playerList = (pl00**)calloc(playerListCount, sizeof(pl00*));
+							playerListCount = (event.packet->dataLength / sizeof(NetworkPackets::PlayerUpdatePacket));
 							playerPointerList = (pl00**)calloc(playerListCount, sizeof(pl00*));
-							playerPacketList = (gameObj::PlayerPacket*)calloc(playerListCount, sizeof(gameObj::PlayerPacket));
+							playerUpdatePacketList = (NetworkPackets::PlayerUpdatePacket*)calloc(playerListCount, sizeof(NetworkPackets::PlayerUpdatePacket));
 						}
 
-						if (playerList)
+						if (playerPointerList)
 						{
-							memcpy(playerPacketList, (gameObj::PlayerPacket*)event.packet->data, event.packet->dataLength);
-
-							for (int k = 0; k < playerListCount; k++)
-							{
-								playerList[k] = (pl00*)&playerPacketList[k].localPlayer[0];
-								playerList[k]->coordinatePointer = &playerList[k]->coordinateMatrix.d;
-							}
+							memcpy(playerUpdatePacketList, (NetworkPackets::PlayerUpdatePacket*)event.packet->data, event.packet->dataLength);
 						}
 					}
 					else
@@ -227,8 +217,8 @@ int ENetThread()
 					return EXIT_FAILURE;
 				if (objectConstructorHook->EnableHook())
 					return EXIT_FAILURE;
-				if (cModelAnimationUpdateHook->EnableHook())
-					return EXIT_FAILURE;
+				//if (cModelAnimationUpdateHook->EnableHook())
+				//	return EXIT_FAILURE;
 
 				// reload stage while maintaining position
 				*(wk::math::cVec*)(mainModuleBase + 0xB65E64) = *playerObjectPtr[0]->coordinatePointer;
@@ -261,8 +251,8 @@ int ENetThread()
 		return EXIT_FAILURE;
 	if (objectConstructorHook->DisableHook())
 		return EXIT_FAILURE;
-	if (cModelAnimationUpdateHook->DisableHook())
-		return EXIT_FAILURE;
+	//if (cModelAnimationUpdateHook->DisableHook())
+	//	return EXIT_FAILURE;
 }
 
 int MainThread()
@@ -281,50 +271,49 @@ int MainThread()
 	Sleep(SLEEPTIME);
 	//*(uintptr_t*)(mainModuleBase + 0xB65E75) = 0x000C00;
 	//*(uintptr_t*)(mainModuleBase + 0xB6B2AF) = 0x02;
+
+	//testing.playerPosition = testing2.playerPosition;
 	
 	while (true)
 	{
 		// I really should have documented what this address was, whoops. All I remember is that I did this to reset the 'PlayerObjectCount' after a load
+		// Probably is the boolean that indicates whether the loading is active or not?
+
 		if (*(bool*)(mainModuleBase + 0xB6B2AF) == 0x1)
 		{
 			playerObjectCount = 0;
 		}
 
-		if (isConnected && playerList && playerPointerList)
+		if (isConnected && playerPointerList)
 		{
 			if (playerPointerList[0] && *playerObjectPtr && playerPointerList[0]->mtb3CamPointer)
 			{
 				bool j = false;
 				for (int i = 0; i < playerListCount - 1; i++)
 				{
-					if (strlen(playerPacketList[i].username) > 3)
+					if (strlen(playerUpdatePacketList[i].username) > 3)
 					{ 
-						std::string tempName(playerPacketList[i].username);
-						std::string tempName2(playerPacket.username);
+						std::string tempName(playerUpdatePacketList[i].username);
+						std::string tempName2(localPlayerUpdatePacket.username);
 						
-						if (strcmp(playerPacketList[i].username, playerPacket.username) == 0)
+						if (strcmp(playerUpdatePacketList[i].username, localPlayerUpdatePacket.username) == 0)
 						{
 							j = false;
 						}
 
-						if (strlen(playerPacketList[i + j].username) < 3 || playerPacketList[i + j].mapID != playerPacket.mapID)
+						if (strlen(playerUpdatePacketList[i + j].username) < 3 || playerUpdatePacketList[i + j].mapID != localPlayerUpdatePacket.mapID)
 						{
 							*playerPointerList[i]->coordinatePointer = wk::math::cVec(0.0f, 1000.0f, 0.0f, 1.0f);
 							playerPointerList[i]->rotation = wk::math::cVec(0.0f, 0.0f, 0.0f, 0.0f);
 							break;
 						}
+						// Commented until NetworkPackets.h is working as intended
+						// 
+						// *playerPointerList[i]->coordinatePointer = playerUpdatePacketList[i + j].playerPosition;
+						// playerPointerList[i]->coordinatePointer->vector.x = playerUpdatePacketList[i + j].playerPosition.vector.x + 50.0f;
+						// playerPointerList[i]->rotation = playerUpdatePacketList[i + j].playerRotation;
+						// playerPointerList[i]->movementBitfield = playerUpdatePacketList[i + j].playerMovementBitfield;
 
-						*playerPointerList[i]->coordinatePointer = *playerList[i + j]->coordinatePointer;
-						playerPointerList[i]->coordinatePointer->vector.x = playerList[i + j]->coordinatePointer->vector.x + 50.0f;
-						playerPointerList[i]->rotation = playerList[i + j]->rotation;
-						playerPointerList[i]->movementStage = playerList[i + j]->movementStage;
-						//playerPointerList[i]->mtb3CamPointer = playerList[i + j]->mtb3CamPointer;
-
-						// Suddenly causes crashes, might be due to the = operator change
-						/*for (int k = 0; k < 48; k++)
-						{
-							playerPointerList[i]->matrixArray[k] = playerList[i + j]->matrixArray[k];
-						}*/
 					}
 				}
 			}

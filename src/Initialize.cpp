@@ -105,9 +105,9 @@ int Initialize()
 		return 1;
 
 	// create detour hook for the PlayerMovementUpdate function in Okami
-	playerMoveHook = new PlayerMovementUpdateHook();
-	if (playerMoveHook->CreateHook())
-		return 1;
+	// playerMoveHook = new PlayerMovementUpdateHook();
+	// if (playerMoveHook->CreateHook())
+	// 	return 1;
 
 	// create detour hook for the PlayerGetInput function in Okami
 	playerGetInputHook = new BaseFunctionHook<PlayerGetInput>(reinterpret_cast<PlayerGetInput>(mainModuleBase + 0x3ACF90), &detourPlayerGetInput);
@@ -125,9 +125,9 @@ int Initialize()
 		return 1;
 
 	// create detour hook for the cModel::AnimatioUpdate(Not actually, only the transposing of the matrix) in Okami
-	cModelAnimationUpdateHook = new BaseFunctionHook<cModelAnimationUpdate>(reinterpret_cast<cModelAnimationUpdate>(flowerKernelModuleBase + 0x2a86), &detourcModelUpdateAnimation);
-	if (cModelAnimationUpdateHook->CreateHook())
-		return 1;
+	// cModelAnimationUpdateHook = new BaseFunctionHook<cModelAnimationUpdate>(reinterpret_cast<cModelAnimationUpdate>(flowerKernelModuleBase + 0x2a86), &detourcModelUpdateAnimation);
+	// if (cModelAnimationUpdateHook->CreateHook())
+	// 	return 1;
 
 	// create detour hook for cpad::Update
 	cpadHook = new BaseFunctionHook<cpadUpdate>(reinterpret_cast<cpadUpdate>(mainModuleBase + 0x186650), &detourCpadUpdate);

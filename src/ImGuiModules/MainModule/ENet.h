@@ -29,7 +29,7 @@ namespace ImGuiModules
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("Username:");
                     ImGui::TableSetColumnIndex(1);
-                    ImGui::InputText("##Username", playerPacket.username, 32);
+                    ImGui::InputText("##Username", localPlayerUpdatePacket.username, 32);
 
                     ImGui::TableNextRow();
                     ImGui::TableSetColumnIndex(0);
@@ -49,7 +49,7 @@ namespace ImGuiModules
                     {
                         if (ImGui::Button("Connect"))
                         {
-                            if (!strcmp(playerPacket.username, ""))
+                            if (!strcmp(localPlayerUpdatePacket.username, ""))
                             {
                                 std::cout << "Please enter a username!" << std::endl;
                             }
@@ -77,23 +77,19 @@ namespace ImGuiModules
 
                 if (isConnected)
                 {
-                    if (playerList && playerPacketList)
+                    if (playerUpdatePacketList)
                     {
                         if (ImGui::CollapsingHeader("Player List"))
                         {
-                            if (playerList[0])
-                            {
                                 for (int i = 0; i < playerListCount; i++)
                                 {
-                                    ImGui::Text(playerPacketList[i].username);
-                                    ImGui::Text("X: %.3f Y: %.3f Z: %.3f", playerList[i]->coordinatePointer->vector.x, playerList[i]->coordinatePointer->vector.y, playerList[i]->coordinatePointer->vector.z);
-                                    ImGui::Text("Pitch: %.3f Yaw: %.3f Roll: %.3f", playerList[i]->rotation.vector.x, playerList[i]->rotation.vector.y, playerList[i]->rotation.vector.z);
-                                    ImGui::Text("Area ID: %X", playerPacketList[i].mapID);
-                                    ImGui::Text("Animation ID: %p", playerList[i]->mtb3CamPointer);
-                                    ImGui::Text("Movement Stage: %X", playerList[i]->movementStage);
+                                    ImGui::Text(playerUpdatePacketList[i].username);
+                                    ImGui::Text("X: %.3f Y: %.3f Z: %.3f", playerUpdatePacketList[i].playerPosition.vector.x, playerUpdatePacketList[i].playerPosition.vector.y, playerUpdatePacketList[i].playerPosition.vector.z);
+                                    ImGui::Text("Pitch: %.3f Yaw: %.3f Roll: %.3f", playerUpdatePacketList[i].playerRotation.vector.x, playerUpdatePacketList[i].playerRotation.vector.y, playerUpdatePacketList[i].playerRotation.vector.z);
+                                    ImGui::Text("Area ID: %X", playerUpdatePacketList[i].mapID);
+                                    ImGui::Text("Movement Stage: %X", playerUpdatePacketList[i].playerMovementBitfield);
                                     ImGui::Separator();
                                 }
-                            }
                         }
                     }
                     if (playerPointerList)
@@ -108,7 +104,7 @@ namespace ImGuiModules
                                     ImGui::Text("X: %.3f Y: %.3f Z: %.3f", playerPointerList[i]->coordinatePointer->vector.x, playerPointerList[i]->coordinatePointer->vector.y, playerPointerList[i]->coordinatePointer->vector.z);
                                     ImGui::Text("Pitch: %.3f Yaw: %.3f Roll: %.3f", playerPointerList[i]->rotation.vector.x, playerPointerList[i]->rotation.vector.y, playerPointerList[i]->rotation.vector.z);
                                     ImGui::Text("Animation Data Pointer: %p", playerPointerList[i]->mtb3CamPointer);
-                                    ImGui::Text("Movement Stage: %X", playerPointerList[i]->movementStage);
+                                    ImGui::Text("Movement Stage: %X", playerPointerList[i]->movementBitfield);
                                     ImGui::Separator();
                                 }
                             }

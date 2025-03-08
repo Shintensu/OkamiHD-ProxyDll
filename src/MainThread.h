@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#include "flower_kernel/flower_kernel.h"
+
 int MainThread();
 
 extern const int SLEEPTIME;
@@ -12,7 +14,6 @@ extern bool isConnected;
 
 extern unsigned int playerObjectCount;
 
-extern gameObj::PlayerPacket* playerPacketList;
+extern NetworkPackets::PlayerUpdatePacket* playerUpdatePacketList;
 extern size_t playerListCount;
 extern pl00** playerPointerList;
-extern pl00** playerList;

@@ -5,7 +5,7 @@
 #include "chainLoad.h"
 #include "iniConfig.h"
 
-#include "main.h"
+extern int WINAPI main(HINSTANCE hinstDLL);
 
 //entry point
 BOOL WINAPI DllMain(

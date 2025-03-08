@@ -30,7 +30,7 @@
     <ClInclude Include="src\Initialize.h" />
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\MainThread.h" />
-    <ClInclude Include="src\GameStructs.h" />
+    <ClInclude Include="src\NetworkPackets.h" />
     <ClInclude Include="src\ImGuiMain.h" />
     <ClInclude Include="src\okamiDecomp\flower_kernel.dll\include\hx.h" />
     <ClInclude Include="src\okamiDecomp\flower_kernel.dll\include\m2.h" />

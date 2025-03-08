@@ -3,9 +3,9 @@
 #include "flower_kernel/flower_kernel.h"
 #include "main/main.h"
 
-#include "GameStructs.h"
+#include "NetworkPackets.h"
 
 extern pl00** playerObjectPtr;
-extern gameObj::PlayerPacket playerPacket;
+extern NetworkPackets::PlayerUpdatePacket localPlayerUpdatePacket;
 
 void UpdateVariables();
